@@ -15,3 +15,5 @@
 3. Start MoveIt for Baxter by running `roslaunch baxter_moveit_config demo_baxter.launch right_electric_gripper:=true left_electric_gripper:=true`
 omitting the last argument if the robot lacks (a) gripper(s).  If this fails on Baxter, try `roslaunch baxter_moveit_config baxter_grippers.launch`
 MoveIt is now ready to compute and execute trajectories on the robot
+
+- `rosrun tetris path_test.py`
