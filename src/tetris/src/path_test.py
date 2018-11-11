@@ -11,6 +11,7 @@ import numpy as np
 from moveit_msgs.msg import OrientationConstraint
 
 from path_planner import *
+from SuctionGripper import *
 from baxter_interface import Limb
 from baxter_interface import Gripper
 #from intera_interface import Gripper
@@ -20,17 +21,12 @@ def main():
     planner = PathPlanner("right_arm")
 
     #Set up the right gripper------------NOT WORKING
-    right_gripper = Gripper('right')
-    print(right_gripper.type())
+    right_gripper = SuctionGripper('right')
+    right_gripper.is_grasping()
     #Close the right gripper
-    print('Closing...')
     right_gripper.close()
-    rospy.sleep(3.0)
     #Open the right gripper
-    print('Opening...')
-    right_gripper.stop()
-    rospy.sleep(1.0)
-    print('Done!')
+    right_gripper.open()
 
     ## Add the obstacle to the planning scene here
     """
