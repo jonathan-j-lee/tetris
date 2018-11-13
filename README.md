@@ -9,7 +9,7 @@
 	- This node will use Baxter’s suction end effector to place the pieces in the solution configuration using closed-loop control.
 
 - `roslaunch baxter_moveit_gui_noexec.launch` for RViz GUI path planning
-- `./baxter.sh [name].local` which is either `asimov, ayrton, archytas,ada,` or `alan`
+- `./baxter.sh [name].local` which is either `asimov, ayrton, archytas, ada,` or `alan`
 1. Enable Baxter by running `rosrun baxter_tools enable_robot.py -e`
 2. Start the Baxter trajectory controller by running `rosrun baxter_interface joint_trajectory_action_server.py`
 3. Start MoveIt for Baxter by running `roslaunch baxter_moveit_config demo_baxter.launch right_electric_gripper:=true left_electric_gripper:=true`
