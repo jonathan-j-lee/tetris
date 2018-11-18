@@ -6,7 +6,7 @@
 - Develop a Tetris solver.
 	- Given a set of Tetris pieces, the solver will return a complete placement for them in the form of an array representing the board. This will be our solution configuration.
 - Develop a piece-placing node.
-	- This node will use Baxter’s suction end effector to place the pieces in the solution configuration using closed-loop control.
+	- This node will use Baxter’s suction end effector to place the pieces in the solution configuration using MoveIt.
 
 - `roslaunch baxter_moveit_gui_noexec.launch` for RViz GUI path planning
 - `./baxter.sh [name].local` which is either `asimov, ayrton, archytas, ada,` or `alan`
