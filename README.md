@@ -12,8 +12,9 @@
 
 First-time setup:
 ```sh
-$ pip install --user -r requirements.txt
+$ pip2 install --user -r requirements.txt
 $ echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
+$ echo 'export PYTHONPATH=$PYTHONPATH:~/.local/share/python2.7/site-packages' >> ~/.bashrc
 $ source ~/.bashrc
 ```
 
