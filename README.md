@@ -12,10 +12,9 @@
 
 First-time setup:
 ```sh
-$ pip install --user pipenv
+$ pip install --user -r requirements.txt
 $ echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
 $ source ~/.bashrc
-$ pipenv install --dev
 ```
 
 For connecting to a robot (need to run every session):
