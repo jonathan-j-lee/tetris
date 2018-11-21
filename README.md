@@ -10,6 +10,15 @@
 
 ## Getting Started
 
+First-time setup:
+```sh
+$ pip install --user pipenv
+$ echo 'export PATH=$PATH:~/.local/bin' >> ~/.bashrc
+$ source ~/.bashrc
+$ pipenv install --dev
+```
+
+For connecting to a robot (need to run every session):
 ```sh
 $ export ROBOT_NAME=[name]
 $ ./baxter.sh "$ROBOT_NAME".local
