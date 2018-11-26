@@ -13,39 +13,36 @@ from moveit_msgs.msg import OrientationConstraint
 from path_planner import *
 from SuctionGripper import *
 from baxter_interface import Limb
-from baxter_interface import Gripper
+from baxter_interface import gripper as robot_gripper
+#from baxter_interface import Gripper
 #from intera_interface import Gripper
 #from intera_interface import Limb
 
 def main():
     planner = PathPlanner("right_arm")
 
-    #Set up the right gripper------------NOT WORKING
-    right_gripper = SuctionGripper('right')
-    right_gripper.is_grasping()
-    #Close the right gripper
-    right_gripper.close()
-    #Open the right gripper
-    right_gripper.open()
+    #Set up the right gripper
+    right_gripper = robot_gripper.Gripper('right')
+    #Calibrate the gripper (other commands won't work unless you do this first)
+    print('Calibrating...')
+    right_gripper.calibrate()
+    rospy.sleep(2.0)    
 
-    ## Add the obstacle to the planning scene here
     """
-    X = 0.5, Y = 0.00, Z = 0.00
-    X = 0.00, Y = 0.00, Z = 0.00, W = 1.00
-    X = 0.40, Y = 1.20, Z = 0.10
-    ""#
+    ## Add the obstacle to the planning scene here
+    #LENGTHS
     X = 1.20
-    Y = 0.10
-    Z = 0.50
+    Y = 1.10
+    Z = 0.1
     box_size = np.array([X, Y, Z])
-    box_name = "box"
+    box_name = "table"
 
     box_pose = PoseStamped()
     box_pose.header.frame_id = "base"
-    #x, y, and z position
-    box_pose.pose.position.x = 0.9
-    box_pose.pose.position.y = 0.0
-    box_pose.pose.position.z = Z / 2
+    #x, y, and z position 0.787, -0.475, -0.172
+    box_pose.pose.position.x = 0.787
+    box_pose.pose.position.y = -0.475
+    box_pose.pose.position.z = -0.174 - Z
     #Orientation as a quaternion
     box_pose.pose.orientation.x = 0.0
     box_pose.pose.orientation.y = 0.0
@@ -68,26 +65,37 @@ def main():
     orientation_constraints = list() #[orien_const]
 
     while not rospy.is_shutdown():
-
+        x, y, z = 0.816, -0.403, -0.170
         raw_input("Press <Enter> to move the right arm to goal pose 1: ")
         while not rospy.is_shutdown():
             try:
-                goal = create_target_pose(x=0.4, y=-0.3, z=0.2)
+                #0.816, -0.403, -0.169
+                goal = create_target_pose(x=x, y=y, z=z)
                 plan = planner.plan_to_pose(goal, orientation_constraints)
 
                 if not planner.execute_plan(plan): 
                     raise Exception("Execution failed")
+
+                #Close the right gripper
+                print('Closing...')
+                right_gripper.close()
+                rospy.sleep(1.0)
             except Exception as e:
                 print e
             else:
-                break
+                if baxter_interface.AnalogIO('right_vacuum_sensor_analog').state() < 20:
+                    print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
+                    z -= .01
+                else:
+                    break
 
+        print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
         raw_input("Press <Enter> to move the right arm to goal pose 2: ")   
         while not rospy.is_shutdown():
             try:
                 goal_2 = create_target_pose(x=0.6, y=-0.3, z=0.0)
                 plan = planner.plan_to_pose(goal_2, orientation_constraints)
-
+                print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
                 if not planner.execute_plan(plan): 
                     raise Exception("Execution failed")
             except Exception as e:
@@ -98,11 +106,17 @@ def main():
         raw_input("Press <Enter> to move the right arm to goal pose 3: ")
         while not rospy.is_shutdown():
             try:
-                goal_3 = create_target_pose(x=0.6, y=-0.1, z=0.1)
+                goal_3 = create_target_pose(x=x, y=y, z=z)
                 plan = planner.plan_to_pose(goal_3, orientation_constraints)
 
                 if not planner.execute_plan(plan): 
                     raise Exception("Execution failed")
+
+                #Open the right gripper
+                print('Opening...')
+                right_gripper.open()
+                rospy.sleep(1.0)
+                print('Done!')
             except Exception as e:
                 print e
             else:
