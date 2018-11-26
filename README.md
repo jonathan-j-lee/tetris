@@ -17,4 +17,4 @@ omitting the last argument if the robot lacks (a) gripper(s).  If this fails on 
 MoveIt is now ready to compute and execute trajectories on the robot
 
 - `rosrun tetris path_test.py`
-- `rosrun tf tf_echo base right_hand`
+- `rosrun tf tf_echo base reference/right_gripper`
