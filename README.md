@@ -18,3 +18,10 @@ MoveIt is now ready to compute and execute trajectories on the robot
 
 - `rosrun tetris path_test.py`
 - `rosrun tf tf_echo base reference/right_gripper`
+
+##TODO
+1. Detect what pieces there are
+2. Input the pieces into the solver, get solution
+3. From solution figure out location (coordinates) to place pieces 
+4. Detect where to pick up the pieces for each piece
+5. Place them in their correct positions (how to get accuracy right?)
