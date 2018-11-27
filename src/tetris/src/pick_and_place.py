@@ -110,3 +110,9 @@ class PickAndPlace(object):
                 print e
             else:
                 break
+
+    def pick_and_place(self, from_x, from_y, z, to_x, to_y):
+        z = self.move_to_position_and_grasp(from_x, from_y, z)
+        print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
+        self.move_to_position(from_x, from_y, z + 0.1)
+        self.move_to_position_and_open(to_x, to_y, z)

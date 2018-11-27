@@ -15,6 +15,11 @@ problem = TetrisSolver(
 if problem.solveProblem():
     print("Found solution: ")
     printMatrix(problem.solutionBoard)
+    for tilePlacement in problem.solution:
+        print("Tile: %i" %(tilePlacement["tile"]))
+        print("\tRow: %i" %(tilePlacement["row"]))
+        print("\tColumn: %i" %(tilePlacement["col"]))
+        print("\tRotation: %i" %(tilePlacement["rotation"]))
 else:
     print("No solution found")
 
@@ -29,6 +34,7 @@ problem = TetrisSolver(
 )
 if problem.solveProblem():
     print("Found solution: ")
+    printMatrix(problem.solutionBoard)
     for tilePlacement in problem.solution:
         print("Tile: %i" %(tilePlacement["tile"]))
         print("\tRow: %i" %(tilePlacement["row"]))
@@ -48,6 +54,11 @@ problem = TetrisSolver(
 if problem.solveProblem():
     print("Found solution: ")
     printMatrix(problem.solutionBoard)
+    for tilePlacement in problem.solution:
+        print("Tile: %i" %(tilePlacement["tile"]))
+        print("\tRow: %i" %(tilePlacement["row"]))
+        print("\tColumn: %i" %(tilePlacement["col"]))
+        print("\tRotation: %i" %(tilePlacement["rotation"]))
 else:
     print("No solution found")
 

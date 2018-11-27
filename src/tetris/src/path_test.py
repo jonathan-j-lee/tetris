@@ -22,6 +22,10 @@ def main():
 
     while not rospy.is_shutdown():
         x, y, z = 0.765, -0.248, -0.304 #0.816, -0.403, -0.170
+
+        raw_input("Press <Enter> to pick and place: ")
+        pap.pick_and_place(x, y, z, x, y)
+        """
         raw_input("Press <Enter> to move the right arm to goal pose 1: ")
         z = pap.move_to_position_and_grasp(x, y, z)
 
@@ -31,10 +35,49 @@ def main():
 
         raw_input("Press <Enter> to move the right arm to goal pose 3: ")
         pap.move_to_position_and_open(x, y, z)
+        """
 
 if __name__ == '__main__':
     rospy.init_node('moveit_node')
     main()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     """
     ## Add the obstacle to the planning scene here

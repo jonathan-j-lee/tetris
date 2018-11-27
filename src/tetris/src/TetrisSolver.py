@@ -162,7 +162,7 @@ class Tile:
     uniqueRotations = 4 #By default, there are 4 unique rotational positions.
 
     '''
-        Rotate the tile 90 degrees
+        Rotate the tile 90 degrees CW
     '''
     @staticmethod
     def rotateTile(tile):
