@@ -18,8 +18,9 @@ MoveIt is now ready to compute and execute trajectories on the robot
 
 - `rosrun tetris path_test.py`
 - `rosrun tf tf_echo base reference/right_gripper`
+- `rosrun baxter_tools tuck_arms.py -u`	
 
-##TODO
+## TODO
 1. Detect what pieces there are
 2. Input the pieces into the solver, get solution
 3. From solution figure out location (coordinates) to place pieces 
