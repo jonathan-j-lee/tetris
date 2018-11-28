@@ -62,10 +62,14 @@ class TetrisSolver(object):
         if(tileCols + col > cols or col < 0):
             raise ValueError("Col is out of bounds")
 
+        centerx, centery = row, col
         for i in range(tileRows):
             for j in range(tileCols):
-                mat[row+i][col+j] += tile[i][j] * placementNumber
-        return mat
+                if tile[i][j] > 0: #solid piece of tile, place it
+                    mat[row+i][col+j] += placementNumber
+                    if tile[i][j] == 2: #center of tile
+                        centerx, centery = row+i, col+j
+        return mat, centerx, centery
 
     '''
         Checks if we can place the tile at the given location.
@@ -108,14 +112,14 @@ class TetrisSolver(object):
                             for rot in range(self.uniqueRotations[tileNumber]):
                                 colOffset = self.findOffset(tile)
                                 if self.canPlaceTile(board, tile, i, j + colOffset): #If it works, see if we can solve using the new solution
-                                    board2 = self.placeTile(board, tile, i, j + colOffset, placement)
+                                    board2, center_r, center_c = self.placeTile(board, tile, i, j + colOffset, placement)
                                     numTiles2 = copy.deepcopy(numTiles)
                                     numTiles2[tileNumber] -= 1 #We placed the tile, so it is no longer available
                                     if self.hasSolution(board2, tiles, numTiles2, i, j, placement + 1):
                                         #Store this part of the solution
                                         self.solution.append({
-                                            "row": i,
-                                            "col": j + colOffset,
+                                            "row": center_r,
+                                            "col": center_c,
                                             "tile": tileNumber,
                                             "rotation": rot
                                         })
@@ -181,7 +185,7 @@ class Tile:
 '''
 class SquareTile(Tile):
     tile = [
-        [1, 1],
+        [1, 2],
         [1, 1]
     ]
     uniqueRotations = 1
@@ -192,7 +196,7 @@ class SquareTile(Tile):
 class LTile(Tile):
     tile = [
         [1, 1, 1],
-        [1, 0, 0]
+        [2, 0, 0]
     ]
 
 '''
@@ -200,7 +204,7 @@ class LTile(Tile):
 '''
 class ReverseLTile(Tile):
     tile = [
-        [1, 0, 0],
+        [2, 0, 0],
         [1, 1, 1]
     ]
 
@@ -210,7 +214,7 @@ class ReverseLTile(Tile):
 class TTile(Tile):
     tile = [
         [1,1,1],
-        [0,1,0]
+        [0,2,0]
     ]
 
 '''
@@ -218,7 +222,7 @@ class TTile(Tile):
 '''
 class LineTile(Tile):
     tile = [
-        [1,1,1,1]
+        [2,1,1,1]
     ]
     uniqueRotations = 2
 
@@ -227,7 +231,7 @@ class LineTile(Tile):
 '''
 class ZTile(Tile):
     tile = [
-        [1,1,0],
+        [1,2,0],
         [0,1,1]
     ]
     uniqueRotations = 2
@@ -237,7 +241,7 @@ class ZTile(Tile):
 '''
 class STile(Tile):
     tile = [
-        [0,1,1],
+        [0,2,1],
         [1,1,0]
     ]
     uniqueRotations = 2

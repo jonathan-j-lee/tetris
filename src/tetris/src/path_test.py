@@ -18,13 +18,32 @@ from baxter_interface import gripper as robot_gripper
 
 def main():
     pap = PickAndPlace()  
-    pap.add_obstacle("table", 0.765, -0.239, -0.316, 1.20, 1.10, 0.1)
+    pap.add_obstacle("table", 0.788, -0.185, -0.166, 1.20, 1.10, 0.1)
+
+    right_gripper = robot_gripper.Gripper('right')
+    #Calibrate the gripper (other commands won't work unless you do this first)
+    print('Calibrating...')
+    right_gripper.calibrate()
+
+    """
+    #Close the right gripper
+    print('Closing...')
+    right_gripper.close()
+    rospy.sleep(1.0)
+
+    #Open the right gripper
+    print('Opening...')
+    right_gripper.open()
+    rospy.sleep(1.0)
+    print('Done!')
+    """
 
     while not rospy.is_shutdown():
-        x, y, z = 0.765, -0.248, -0.304 #0.816, -0.403, -0.170
+        x, y, z = 0.783, -0.326, -0.159 #0.816, -0.403, -0.170
+        endx, endy = 0.761, -0.123
 
         raw_input("Press <Enter> to pick and place: ")
-        pap.pick_and_place(x, y, z, x, y)
+        pap.pick_and_place(x, y, z, endx, endy)
         """
         raw_input("Press <Enter> to move the right arm to goal pose 1: ")
         z = pap.move_to_position_and_grasp(x, y, z)

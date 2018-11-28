@@ -18,15 +18,13 @@ class PickAndPlace(object):
         #Calibrate the gripper (other commands won't work unless you do this first)
         print('Calibrating...')
         self.right_gripper.calibrate()
-        rospy.sleep(2.0) 
 
         """
-        #Open the right gripper
-        print('Opening...')
-        self.right_gripper.open()
+        self.right_gripper.close()
         rospy.sleep(1.0)
-        print('Dropped grasped object')
+        self.right_gripper.open()
         """
+        rospy.sleep(1.0)
 
     def add_obstacle(self, name, x_pos, y_pos, z_pos, x_width, y_width, z_width):
         #LENGTHS
@@ -55,15 +53,19 @@ class PickAndPlace(object):
         self.planner.remove_obstacle(box_name)
 
     def move_to_position(self, x, y, z, orientation_constraints=list()):
+        print("moving to position: {}, {}, {}".format(x, y, z))
+        o_y = -1.0 #down
         while not rospy.is_shutdown():
             try:
-                goal = create_target_pose(x=x, y=y, z=z)
+                goal = create_target_pose(x=x, y=y, z=z, o_y=o_y)
                 plan = self.planner.plan_to_pose(goal, orientation_constraints)
 
                 if not self.planner.execute_plan(plan): 
                     raise Exception("Execution failed")
             except Exception as e:
+                o_y += 0.1 #adjust orientation and try again
                 print e
+                print("new o_y: {}".format(o_y))
             else:
                 break
 
@@ -76,6 +78,7 @@ class PickAndPlace(object):
                 goal = create_target_pose(x=x, y=y, z=z)
                 plan = self.planner.plan_to_pose(goal, orientation_constraints)
 
+                print("moving to position: {}, {}, {} AND GRASPING".format(x, y, z))
                 if not self.planner.execute_plan(plan): 
                     raise Exception("Execution failed")
 
@@ -84,12 +87,14 @@ class PickAndPlace(object):
                 self.right_gripper.close()
                 rospy.sleep(1.0)
             except Exception as e:
+                print("---------------Error in move and grasp")
                 print e
             else:
                 if baxter_interface.AnalogIO('right_vacuum_sensor_analog').state() < 20:
                     print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
-                    z -= .01
+                    z -= .001
                 else:
+                    print("Object grasped!")
                     return z #break
 
     def move_to_position_and_open(self, x, y, z, orientation_constraints=list()):
@@ -115,4 +120,6 @@ class PickAndPlace(object):
         z = self.move_to_position_and_grasp(from_x, from_y, z)
         print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
         self.move_to_position(from_x, from_y, z + 0.1)
-        self.move_to_position_and_open(to_x, to_y, z)
+        self.move_to_position(to_x, to_y, z + 0.1)
+        rospy.sleep(1.0)
+        self.move_to_position_and_open(to_x - 0.003, to_y - 0.003, z)

@@ -4,6 +4,25 @@
 
 from TetrisSolver import *
 
+print("====================Our Puzzle=====================")
+problem = TetrisSolver(
+    boardRows = 6,
+    boardCols = 8,
+    tiles = [LineTile, TTile, SquareTile, ReverseLTile, LTile, STile, ZTile],
+    numTiles = [2, 2, 2, 2, 1, 2, 1]
+)
+if problem.solveProblem():
+    print("Found solution: ")
+    printMatrix(problem.solutionBoard)
+    for tilePlacement in problem.solution:
+        print("Tile: %i" %(tilePlacement["tile"]))
+        print("\tRow: %i" %(tilePlacement["row"]))
+        print("\tColumn: %i" %(tilePlacement["col"]))
+        print("\tRotation: %i" %(tilePlacement["rotation"]))
+else:
+    print("No solution found")
+
+"""
 #Example 1: Full example with error handling and table output
 print("====================Example 1=====================")
 problem = TetrisSolver(
@@ -186,3 +205,4 @@ if problem.solveProblem():
     printMatrix(problem.solutionBoard)
 else:
     print("No solution found")
+"""
