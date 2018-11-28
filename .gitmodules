@@ -1,3 +1,4 @@
 [submodule "src/ar_track_alvar"]
-	path = src/ar_track_alvar
-	url = git@github.com:ros-perception/ar_track_alvar.git
+    path = src/ar_track_alvar
+    url = git@github.com:ucb-ee106/ar_track_alvar.git
+    branch = indigo-devel
