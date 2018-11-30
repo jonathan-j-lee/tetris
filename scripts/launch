@@ -19,5 +19,7 @@ tmux split-window -v "./baxter.sh $1"
 tmux send-keys "roslaunch tetris baxter_moveit_headless.launch" C-m
 tmux select-pane -t 0
 tmux send-keys "roslaunch ar_track_alvar camera_track.launch" C-m
+tmux select-pane -t 2
+tmux send-keys "rostopic echo /visualization_marker" C-m
 
 tmux -2 attach-session -t "$session"
