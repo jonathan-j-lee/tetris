@@ -158,6 +158,70 @@ class TetrisSolver(object):
             if tile[0][j] > 0:
                 return -j
 
+class OurSolver(object):
+
+    """
+        # Pieces to AR Tags 
+        {
+            'SquareTile':0,
+            'LineTile':1,
+            'STile':2,
+            'ZTile':3, 1
+            'ReverseLTile':4,
+            'TTile':5,
+            'LTile':6, 1
+            'FrameCorner':7,
+        }
+    """
+    def __init__(self, boardRows=6, boardCols=8, numTiles=[2, 2, 2, 1, 2, 2, 1]):
+        self.tiles = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
+        self.problem = TetrisSolver(
+            boardRows = boardRows,
+            boardCols = boardCols,
+            tiles = self.tiles,
+            numTiles = numTiles
+        )
+
+        self.SQUARETILE = 0
+        self.LINETILE = 1
+        self.STILE = 2
+        self.ZTILE = 3
+        self.REVERSELTILE = 4
+        self.TTILE = 5
+        self.LTILE = 6
+
+    def solve(self):
+        if self.problem.solveProblem():
+            print("Found solution: ")
+            
+            self.solutionBoard = self.problem.solutionBoard
+            printMatrix(self.solutionBoard)
+
+            self.solution = [[], [], [], [], [], [], []]
+            for tilePlacement in self.problem.solution:
+                tileNumber = tilePlacement["tile"]
+                row = tilePlacement["row"]
+                col = tilePlacement["col"] 
+                rotation = tilePlacement["rotation"]
+                print("Tile: %i" %(tileNumber))
+                print("\tRow: %i" %(row))
+                print("\tColumn: %i" %(col))
+                print("\tRotation: %i" %(rotation))
+                self.solution[int(tileNumber)] += [(row, col, rotation)]
+        else:
+            print("No solution found")
+
+    def getCoordinatesForPiece(self, piece):
+        """
+            piece = index of piece (e.g. self.LINETILE)
+
+            Gets coordinates of all pieces with respect to top left corner
+
+            TODO: figure out orientation
+        """
+        for piecePlacement in self.solution[piece]:
+
+
 '''
 	The base class for any tiles used.
 '''
