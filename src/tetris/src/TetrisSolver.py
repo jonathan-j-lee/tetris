@@ -66,10 +66,19 @@ class TetrisSolver(object):
         for i in range(tileRows):
             for j in range(tileCols):
                 if tile[i][j] > 0: #solid piece of tile, place it
-                    mat[row+i][col+j] += placementNumber
+                    suffix = "0" * self.numDigits(placementNumber)
                     if tile[i][j] == 2: #center of tile
                         centerx, centery = row+i, col+j
+                        suffix = str(placementNumber)
+                    mat[row+i][col+j] = int(str(placementNumber) + suffix)
         return mat, centerx, centery
+
+    def numDigits(self, i):
+        numDigits = 0
+        while (i != 0):
+            i = i // 10
+            numDigits += 1
+        return numDigits
 
     '''
         Checks if we can place the tile at the given location.
@@ -173,6 +182,19 @@ class OurSolver(object):
             'FrameCorner':7,
         }
     """
+    SQUARETILE = 0
+    LINETILE = 1
+    STILE = 2
+    ZTILE = 3
+    REVERSELTILE = 4
+    TTILE = 5
+    LTILE = 6
+    tileNumToType = ["SquareTile", "LineTile", "STile", "ZTile", "ReverseLTile", "TTile", "LTile"]
+
+    inchToM = .0254 #1" = 2.54cm
+    frameWidth = 1 * inchToM #.0254
+    pieceWidth = 2.5 * inchToM #.0635
+
     def __init__(self, boardRows=6, boardCols=8, numTiles=[2, 2, 2, 1, 2, 2, 1]):
         self.tiles = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
         self.problem = TetrisSolver(
@@ -180,15 +202,7 @@ class OurSolver(object):
             boardCols = boardCols,
             tiles = self.tiles,
             numTiles = numTiles
-        )
-
-        self.SQUARETILE = 0
-        self.LINETILE = 1
-        self.STILE = 2
-        self.ZTILE = 3
-        self.REVERSELTILE = 4
-        self.TTILE = 5
-        self.LTILE = 6
+        )        
 
     def solve(self):
         if self.problem.solveProblem():
@@ -203,7 +217,7 @@ class OurSolver(object):
                 row = tilePlacement["row"]
                 col = tilePlacement["col"] 
                 rotation = tilePlacement["rotation"]
-                print("Tile: %i" %(tileNumber))
+                print("Tile: %s" %(self.tileNumToType[tileNumber]))
                 print("\tRow: %i" %(row))
                 print("\tColumn: %i" %(col))
                 print("\tRotation: %i" %(rotation))
@@ -216,11 +230,35 @@ class OurSolver(object):
             piece = index of piece (e.g. self.LINETILE)
 
             Gets coordinates of all pieces with respect to top left corner
+            Returns the coordinates for the specified piece type as an array of tuples:
+                ((x, y, rotation))
 
             TODO: figure out orientation
-        """
-        for piecePlacement in self.solution[piece]:
+            x   ^
+                |
 
+            y   <--
+
+            0.995, -0.097, -0.002, 0.016
+            -0.701, 0.713, 0.001, -0.008
+            0.002, 1.000, 0.028, 0.004
+            0.714, 0.700, -0.020, -0.001
+        """
+        self.coordinates = []
+        for piecePlacement in self.solution[piece]:
+            offset_x = -(self.frameWidth / 2)
+            offset_y = -(self.frameWidth / 2)
+
+            #offset x,y should be the exact top left corner of the frame
+            row = piecePlacement[0]
+            col = piecePlacement[1]
+            rotation = piecePlacement[2]
+
+            x = (col * self.pieceWidth) + (self.pieceWidth / 2)
+            y = (row * self.pieceWidth) + (self.pieceWidth / 2)
+
+            self.coordinates += [(-x + offset_x, -y + offset_y, rotation)]
+        return self.coordinates
 
 '''
 	The base class for any tiles used.

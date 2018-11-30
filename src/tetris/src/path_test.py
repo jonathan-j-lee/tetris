@@ -7,8 +7,10 @@ Author: James Fang
 import sys
 import rospy
 import numpy as np
+import tf2_ros 
 
 from moveit_msgs.msg import OrientationConstraint
+from geometry_msgs.msg import TransformStamped
 
 from path_planner import *
 from pick_and_place import *
@@ -17,15 +19,71 @@ from baxter_interface import Limb
 from baxter_interface import gripper as robot_gripper
 
 def main():
-    pap = PickAndPlace()  
-    pap.add_obstacle("table", 0.788, -0.185, -0.166, 1.20, 1.10, 0.1)
+    """
+        z :
+            0       : 0
+            pi / 2  : sqrt(2) / 2
+            pi      : 1
+            3pi / 2 : sqrt(2) / 2
+        w :
+            0       : 1
+            pi / 2  : sqrt(2) / 2
+            pi      : 0
+            3pi / 2 : -sqrt(2) / 2
 
+        0       : 0,    1.0,    0,  0
+        90      : r2,   r2,     0,  0
+        180     : 1.0,  0,      0,  0
+        270     : r2,   -r2,    0,  0
+    """
+    x, y, z = 0.864, -0.244, 0.027
+    r2 = np.sqrt(2) / 2
+    rotations = [
+        (0,     1.0,     0,      0),
+        (r2,    r2,     0,      0),
+        (1.0,   0.0,     0,      0),
+        (r2,    -r2,    0,      0)
+    ]
+    o_x, o_y, o_z, o_w = rotations[0]
+    endx, endy = x, y
+
+    #resetGripper()
+    pap = PickAndPlace()  
+    pap.add_obstacle("table", x, y, z - .03, 1.20, 1.10, 0.1)
+
+    while not rospy.is_shutdown():
+        topLeftX, topLeftY = 0.795, -0.017
+
+        #raw_input("Press <Enter> to pick and place: ")
+        #pap.pick_and_place(x, y, z, endx, endy)
+
+        raw_input("Press <Enter> to move the right arm to goal pose 1: ")
+        pap.move_to_position(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
+
+        o_x, o_y, o_z, o_w = rotations[1]
+        raw_input("Press <Enter> to move the right arm to goal pose 2: ")   
+        pap.move_to_position(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
+        
+        o_x, o_y, o_z, o_w = rotations[2]
+        raw_input("Press <Enter> to move the right arm to goal pose 3: ")   
+        pap.move_to_position(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
+        
+        o_x, o_y, o_z, o_w = rotations[3]
+        raw_input("Press <Enter> to move the right arm to goal pose 4: ")   
+        pap.move_to_position(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
+
+def resetGripper():
+    #Set up the right gripper
     right_gripper = robot_gripper.Gripper('right')
     #Calibrate the gripper (other commands won't work unless you do this first)
     print('Calibrating...')
     right_gripper.calibrate()
+    rospy.sleep(2.0)
 
-    """
     #Close the right gripper
     print('Closing...')
     right_gripper.close()
@@ -36,25 +94,6 @@ def main():
     right_gripper.open()
     rospy.sleep(1.0)
     print('Done!')
-    """
-
-    while not rospy.is_shutdown():
-        x, y, z = 0.783, -0.326, -0.159 #0.816, -0.403, -0.170
-        endx, endy = 0.761, -0.123
-
-        raw_input("Press <Enter> to pick and place: ")
-        pap.pick_and_place(x, y, z, endx, endy)
-        """
-        raw_input("Press <Enter> to move the right arm to goal pose 1: ")
-        z = pap.move_to_position_and_grasp(x, y, z)
-
-        print("-------------Curr vacuum state:", baxter_interface.AnalogIO('right_vacuum_sensor_analog').state())
-        raw_input("Press <Enter> to move the right arm to goal pose 2: ")   
-        pap.move_to_position(x=0.6, y=-0.3, z=0.0)
-
-        raw_input("Press <Enter> to move the right arm to goal pose 3: ")
-        pap.move_to_position_and_open(x, y, z)
-        """
 
 if __name__ == '__main__':
     rospy.init_node('moveit_node')

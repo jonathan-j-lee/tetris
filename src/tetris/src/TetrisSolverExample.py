@@ -14,6 +14,7 @@ solver = OurSolver(
     numTiles = [2, 2, 2, 2, 1, 2, 1]
 )
 solver.solve()
+print(solver.getCoordinatesForPiece(OurSolver.SQUARETILE))
 
 """
 #Example 1: Full example with error handling and table output
