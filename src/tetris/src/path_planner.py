@@ -74,6 +74,28 @@ class PathPlanner(object):
         self._group = None
         rospy.loginfo("Stopping Path Planner")
 
+    def move_to_position(self, target_position):
+        """
+            target_position: [x, y, z]
+        """
+        try:
+            self._group.set_position_target(target_position)
+            self._group.go()
+        except rospy.ServiceException, e:
+            print("move_to_position({}, {}, {}) failed".format(x, y, z))
+            print(e)
+
+    def move_to_pose(self, x, y, z, o_x, o_y, o_z, o_w):
+        try:
+            goal = create_target_pose(x=x, y=y, z=z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+            self._group.set_pose_target(goal)
+            self._group.go()
+        except Exception as e:
+            print("move_to_pose({}, {}, {}, o_x={}, o_y={}, o_z={}, o_w={}) failed".format(x, y, z, o_x, o_y, o_z, o_w))
+            print(e)
+            return False
+        return True
+
     def plan_to_pose(self, target, orientation_constraints):
         """
         Generates a plan given an end effector pose subject to orientation constraints
@@ -85,7 +107,6 @@ class PathPlanner(object):
         Outputs:
         path: A moveit_msgs/RobotTrajectory path
         """
-
         self._group.set_pose_target(target)
         self._group.set_start_state_to_current_state()
 
@@ -150,17 +171,22 @@ class PathPlanner(object):
 
         self._planning_scene_publisher.publish(co)
 
-def create_target_pose(x=0.0, y=0.0, z=0.0, o_x=0.0, o_y=-1.0, o_z=0.0, o_w=0.0, frame_id='base'):
-    """
-        Default to down orientation (0, -1, 0, 0)
-    """
+def create_target_position(x, y, z):
     goal = PoseStamped()
-    goal.header.frame_id = frame_id
+    goal.header.frame_id = 'base'
 
     #x, y, and z position
     goal.pose.position.x = x
     goal.pose.position.y = y
     goal.pose.position.z = z
+
+    return goal 
+
+def create_target_pose(x=0.0, y=0.0, z=0.0, o_x=0.0, o_y=-1.0, o_z=0.0, o_w=0.0):
+    """
+        Default to down orientation (0, -1, 0, 0)
+    """
+    goal = create_target_position(x, y, z)
 
     #Orientation as a quaternion
     goal.pose.orientation.x = o_x
