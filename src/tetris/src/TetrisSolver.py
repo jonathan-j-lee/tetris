@@ -12,6 +12,7 @@ __maintainer__ = "Caleb Begly"
 
 import numpy
 import copy
+import operator
 
 class TetrisSolver(object):
     '''
@@ -189,7 +190,7 @@ class OurSolver(object):
     REVERSELTILE = 4
     TTILE = 5
     LTILE = 6
-    tileNumToType = ["SquareTile", "LineTile", "STile", "ZTile", "ReverseLTile", "TTile", "LTile"]
+    tileIndexToType = ["SquareTile", "LineTile", "STile", "ZTile", "ReverseLTile", "TTile", "LTile"]
 
     inchToM = .0254 #1" = 2.54cm
     frameWidth = 1 * inchToM #.0254
@@ -213,52 +214,82 @@ class OurSolver(object):
 
             self.solution = [[], [], [], [], [], [], []]
             for tilePlacement in self.problem.solution:
-                tileNumber = tilePlacement["tile"]
+                tile_index = tilePlacement["tile"]
                 row = tilePlacement["row"]
                 col = tilePlacement["col"] 
                 rotation = tilePlacement["rotation"]
-                print("Tile: %s" %(self.tileNumToType[tileNumber]))
+                self.solution[int(tile_index)] += [(row, col, rotation)]
+                """
+                print("Tile: %s" %(self.tileIndexToType[tile_index]))
                 print("\tRow: %i" %(row))
                 print("\tColumn: %i" %(col))
                 print("\tRotation: %i" %(rotation))
-                self.solution[int(tileNumber)] += [(row, col, rotation)]
+                """
         else:
             print("No solution found")
 
+    def getOrderForPlacement(self):
+        pieces = []
+        maxRow = 0
+        for tilePlacement in self.problem.solution:
+            tile_index = int(tilePlacement["tile"])
+            row = int(tilePlacement["row"])
+            col = int(tilePlacement["col"])
+            rotation = int(tilePlacement["rotation"])
+
+            pieces += [Piece(tile_index, row, col, rotation)]
+            if row > maxRow:
+                maxRow = row
+
+        pieces.sort(key=operator.attrgetter('row'))
+
+        #now sort each row by col
+        rowsOfPieces = []
+        sameRowPieces = []
+        currRow = -1
+        i = 0
+        for piece in pieces:
+            if piece.row > currRow: #moved to new row
+                currRow = piece.row
+                i += 1
+                sameRowPieces = []
+                rowsOfPieces += [sameRowPieces]
+                
+            sameRowPieces += [piece]
+
+        pieceOrder = []
+        for rowOfPieces in rowsOfPieces:
+            rowOfPieces.sort(key=operator.attrgetter('col'))
+            pieceOrder.extend(rowOfPieces)
+        return pieceOrder
+
     def getCoordinatesForPiece(self, piece):
         """
-            piece = index of piece (e.g. self.LINETILE)
-
-            Gets coordinates of all pieces with respect to top left corner
-            Returns the coordinates for the specified piece type as an array of tuples:
+            Gets coordinates of the Piece with respect to top left corner of the board in the board's frame
+            Returns the coordinates for the piece as an array of tuples:
                 ((x, y, rotation))
 
-            TODO: figure out orientation
+            TODO: Get orientation of the frame
             x   ^
                 |
 
             y   <--
-
-            0.995, -0.097, -0.002, 0.016
-            -0.701, 0.713, 0.001, -0.008
-            0.002, 1.000, 0.028, 0.004
-            0.714, 0.700, -0.020, -0.001
         """
-        self.coordinates = []
-        for piecePlacement in self.solution[piece]:
-            offset_x = -(self.frameWidth / 2)
-            offset_y = -(self.frameWidth / 2)
+        offset_x = -(self.frameWidth / 2)
+        offset_y = -(self.frameWidth / 2)
 
-            #offset x,y should be the exact top left corner of the frame
-            row = piecePlacement[0]
-            col = piecePlacement[1]
-            rotation = piecePlacement[2]
+        #offset x,y should be the exact top left corner of the frame
+        x = (piece.col * self.pieceWidth) + (self.pieceWidth / 2)
+        y = (piece.row * self.pieceWidth) + (self.pieceWidth / 2)
 
-            x = (col * self.pieceWidth) + (self.pieceWidth / 2)
-            y = (row * self.pieceWidth) + (self.pieceWidth / 2)
+        return (-x + offset_x, -y + offset_y, piece.rotation)
 
-            self.coordinates += [(-x + offset_x, -y + offset_y, rotation)]
-        return self.coordinates
+class Piece:
+    def __init__(self, tile_index, row, col, rotation):
+        self.tile_index = tile_index
+        self.row = row
+        self.col = col
+        self.rotation = rotation
 
 '''
 	The base class for any tiles used.
@@ -284,6 +315,7 @@ class Tile:
 
 '''
     Square Tile
+    AR Tag 0
 '''
 class SquareTile(Tile):
     tile = [
@@ -294,15 +326,20 @@ class SquareTile(Tile):
 
 '''
     Left L Tile
+    AR Tag 6
 '''
 class LTile(Tile):
+    '''[2, 0, 0],
+        [1, 1, 1]'''
     tile = [
-        [1, 1, 1],
-        [2, 0, 0]
+        [2, 1],
+        [0, 1],
+        [0, 1]
     ]
 
 '''
     Right L Tile
+    AR Tag 4
 '''
 class ReverseLTile(Tile):
     tile = [
@@ -312,6 +349,7 @@ class ReverseLTile(Tile):
 
 '''
     T Tile
+    AR Tag 5
 '''
 class TTile(Tile):
     tile = [
@@ -321,30 +359,43 @@ class TTile(Tile):
 
 '''
     Line Tile
+    AR Tag 1
 '''
 class LineTile(Tile):
+    #[2,1,1,1]
     tile = [
-        [2,1,1,1]
+        [2],
+        [1],
+        [1],
+        [1]
     ]
     uniqueRotations = 2
 
 '''
     Z Tile
+    AR Tag 3
 '''
 class ZTile(Tile):
+    '''[1,2,0],
+        [0,1,1]'''
     tile = [
-        [1,2,0],
-        [0,1,1]
+        [0,1],
+        [1,2],
+        [1,0]
     ]
     uniqueRotations = 2
 
 '''
     S Tile
+    AR Tag 2
 '''
 class STile(Tile):
+    '''[0,2,1],
+        [1,1,0]'''
     tile = [
-        [0,2,1],
-        [1,1,0]
+        [1,0],
+        [1,2],
+        [0,1]
     ]
     uniqueRotations = 2
 

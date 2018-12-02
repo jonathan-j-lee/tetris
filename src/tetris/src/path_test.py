@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 """
-Pick and Place scriptt for Tetris Final Project
+Pick and Place script for Tetris Final Project
 Author: James Fang
 """
 
@@ -28,14 +28,15 @@ from baxter_interface import gripper as robot_gripper
 """
 def main():
     pap = PickAndPlace()  
+    addTableAtHeight(pap, -0.160)
 
     #resetGripper()
     """
     testGrasp(pap)
     testRotations(pap)
+    testRotateBy(pap)
     """
-    addTableAtHeight(pap, -0.160)
-    testPickAndPlace(pap)
+    #testPickAndPlace(pap)
 
 def addTableAtHeight(pap, z):
     pap.add_obstacle("table", 0.768, 0.032, z, 1.0, 1.0, 0.1)
@@ -93,7 +94,7 @@ def testGrasp(pap):
     print("Table height: {}".format(pap.table_height))
 
 def testRotations(pap):
-    x, y, z = 0.824, -0.117, -0.035
+    x, y, z = 0.828, -0.257, -0.024
 
     raw_input("Press <Enter> to move the right arm to goal pose 1: ")
     pap.move_to_rotation(x, y, z, pap.ROT_0)
@@ -108,6 +109,18 @@ def testRotations(pap):
     
     raw_input("Press <Enter> to move the right arm to goal pose 4: ")   
     pap.move_to_rotation(x, y, z, pap.ROT_270)
+
+def testRotateBy(pap):
+    x, y, z = 0.828, -0.257, -0.024
+
+    raw_input("Press <Enter> to move the right arm to goal pose 1: ")
+    pap.move_to_rotation(x, y, z, pap.ROT_270)
+    #rospy.sleep(1.0)
+    #print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
+
+    while not rospy.is_shutdown():
+        raw_input("Press <Enter> to rotate by 90 deg: ")   
+        pap.rotateBy(np.pi / 2)
 
 if __name__ == '__main__':
     rospy.init_node('moveit_node')

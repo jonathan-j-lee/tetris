@@ -14,7 +14,11 @@ solver = OurSolver(
     numTiles = [2, 2, 2, 2, 1, 2, 1]
 )
 solver.solve()
-print(solver.getCoordinatesForPiece(OurSolver.SQUARETILE))
+#print(solver.getCoordinatesForPiece(OurSolver.SQUARETILE))
+for piece in solver.getOrderForPlacement():
+    print("Piece: ", solver.tileIndexToType[piece.tile_index])
+    print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
+    print("\tCoordinates: {}".format(solver.getCoordinatesForPiece(piece)))
 
 """
 #Example 1: Full example with error handling and table output

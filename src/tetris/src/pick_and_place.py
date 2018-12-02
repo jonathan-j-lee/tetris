@@ -8,6 +8,7 @@ from geometry_msgs.msg import TransformStamped
 from moveit_msgs.srv import GetPositionIK, GetPositionIKRequest, GetPositionIKResponse
 from geometry_msgs.msg import PoseStamped
 from moveit_commander import MoveGroupCommander
+from tf.transformations import *
 
 from path_planner import *
 from baxter_interface import Limb, AnalogIO
@@ -91,10 +92,10 @@ class PickAndPlace(object):
         rospy.sleep(1.0)
 
     def move_to_position(self, x, y, z):
-        self.planner.move_to_position([x, y, z])
+        self.planner.move_to_position_planner([x, y, z])
 
     def move_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
-        return self.planner.move_to_pose(x, y, z, o_x, o_y, o_z, o_w)
+        return self.planner.move_to_pose_planner(x, y, z, o_x, o_y, o_z, o_w)
         
     def move_to_pose_and_grasp(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         """
@@ -165,6 +166,21 @@ class PickAndPlace(object):
         translation = self.getCurrPosition()
         x, y, z = translation.x, translation.y, translation.z  #keep translational x, y, z coordinates the same
         o_x, o_y, o_z, o_w = rotations[rotation] #get proper orientation
+        self.move_to_pose(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+
+    def rotateBy(self, rad):
+        """
+            Rotates by rad radians about the Z-axis CW
+        """
+        curr_rot = self.getCurrRotation()
+
+        q_rot = quaternion_from_euler(0, 0, -rad)
+        q_curr = (curr_rot.x, curr_rot.y, curr_rot.z, curr_rot.w)
+        q_new = quaternion_multiply(q_rot, q_curr)
+
+        translation = self.getCurrPosition()
+        x, y, z = translation.x, translation.y, translation.z  #keep translational x, y, z coordinates the same
+        o_x, o_y, o_z, o_w = q_new[0], q_new[1], q_new[2], q_new[3]
         self.move_to_pose(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
 
     def goLowerBy(self, offset_z):

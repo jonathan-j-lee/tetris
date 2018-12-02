@@ -96,6 +96,35 @@ class PathPlanner(object):
             return False
         return True
 
+    def move_to_position_planner(self, target_position):
+        """
+            target_position: [x, y, z]
+        """
+        x, y, z = target_position[0], target_position[1], target_position[2]
+        try:
+            goal = create_target_position(x, y, z)
+            plan = self.plan_to_pose(goal, list())
+            if not self.execute_plan(plan):
+                raise Exception("Execution failed")
+        except Exception as e:
+            print("move_to_position_planner({}, {}, {}) failed".format(x, y, z))
+            print(e)
+            return False
+        return True
+
+    def move_to_pose_planner(self, x, y, z, o_x, o_y, o_z, o_w):
+        print("Called move_to_pose_planner({}, {}, {}, o_x={}, o_y={}, o_z={}, o_w={})".format(x, y, z, o_x, o_y, o_z, o_w))
+        try:
+            goal = create_target_pose(x=x, y=y, z=z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+            plan = self.plan_to_pose(goal, list())
+            if not self.execute_plan(plan):
+                raise Exception("Execution failed")
+        except Exception as e:
+            print("move_to_pose_planner({}, {}, {}, o_x={}, o_y={}, o_z={}, o_w={}) failed".format(x, y, z, o_x, o_y, o_z, o_w))
+            print(e)
+            return False
+        return True
+
     def plan_to_pose(self, target, orientation_constraints):
         """
         Generates a plan given an end effector pose subject to orientation constraints
