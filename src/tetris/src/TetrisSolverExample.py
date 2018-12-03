@@ -4,6 +4,23 @@
 
 from TetrisSolver import *
 
+print("====================Our Puzzle=====================")
+"""
+[LineTile, TTile, SquareTile, ReverseLTile, LTile, STile, ZTile]
+"""
+solver = OurSolver(
+    boardRows = 6,
+    boardCols = 8,
+    numTiles = [2, 2, 2, 2, 1, 2, 1]
+)
+solver.solve()
+#print(solver.getCoordinatesForPiece(OurSolver.SQUARETILE))
+for piece in solver.getOrderForPlacement():
+    print("Piece: ", solver.tileIndexToType[piece.tile_index])
+    print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
+    print("\tCoordinates: {}".format(solver.getCoordinatesForPiece(piece)))
+
+"""
 #Example 1: Full example with error handling and table output
 print("====================Example 1=====================")
 problem = TetrisSolver(
@@ -15,6 +32,11 @@ problem = TetrisSolver(
 if problem.solveProblem():
     print("Found solution: ")
     printMatrix(problem.solutionBoard)
+    for tilePlacement in problem.solution:
+        print("Tile: %i" %(tilePlacement["tile"]))
+        print("\tRow: %i" %(tilePlacement["row"]))
+        print("\tColumn: %i" %(tilePlacement["col"]))
+        print("\tRotation: %i" %(tilePlacement["rotation"]))
 else:
     print("No solution found")
 
@@ -29,6 +51,7 @@ problem = TetrisSolver(
 )
 if problem.solveProblem():
     print("Found solution: ")
+    printMatrix(problem.solutionBoard)
     for tilePlacement in problem.solution:
         print("Tile: %i" %(tilePlacement["tile"]))
         print("\tRow: %i" %(tilePlacement["row"]))
@@ -48,6 +71,11 @@ problem = TetrisSolver(
 if problem.solveProblem():
     print("Found solution: ")
     printMatrix(problem.solutionBoard)
+    for tilePlacement in problem.solution:
+        print("Tile: %i" %(tilePlacement["tile"]))
+        print("\tRow: %i" %(tilePlacement["row"]))
+        print("\tColumn: %i" %(tilePlacement["col"]))
+        print("\tRotation: %i" %(tilePlacement["rotation"]))
 else:
     print("No solution found")
 
@@ -175,3 +203,4 @@ if problem.solveProblem():
     printMatrix(problem.solutionBoard)
 else:
     print("No solution found")
+"""
