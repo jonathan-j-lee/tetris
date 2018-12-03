@@ -19,12 +19,12 @@ from pick_and_place import *
 from baxter_interface import Limb
 from baxter_interface import gripper as robot_gripper
 
-z_offset = .030
+z_offset = -.030
 def main():
-    pap = PickAndPlace()  
-    addTableAtHeight(pap, -0.185 - z_offset)
+    pap = PickAndPlace(z_offset=z_offset)  
+    addTableAtHeight(pap, -0.185)
     
-    #testMoveToRotation(pap, 0.763, -0.135, -0.170 - z_offset)
+    #testMoveToRotation(pap, 0.763, -0.135, -0.170)
     #testRotateBy(pap)
     #resetGripper()
     #testGrasp(pap)
@@ -67,13 +67,13 @@ def testPickAndPlace(pap):
     endX, endY = 0.801, -0.315
 
     raw_input('Press [Enter] to pick up object at ({}, {}, {}): '.format(startX, startY, startZ))
-    pap.move_to_rotation_and_grasp(startX, startY, startZ - z_offset, pap.ROT_0)
+    pap.move_to_rotation_and_grasp(startX, startY, startZ, pap.ROT_0)
 
     print("Table-height: ", pap.table_height)
     pap.move_to_position(startX, startY, pap.table_height + 0.1)
     pap.move_to_rotation(endX, endY, pap.table_height + 0.01, pap.ROT_0)
 
-    raw_input('Press [Enter] to drop off object at ({}, {}, {}): '.format(endX, endY, pap.table_height - z_offset))
+    raw_input('Press [Enter] to drop off object at ({}, {}, {}): '.format(endX, endY, pap.table_height))
     pap.move_to_rotation_and_open(endX, endY, pap.table_height, pap.ROT_0)
 
 def testGrasp(pap):
@@ -82,13 +82,13 @@ def testGrasp(pap):
 
     #GOES TO this random spot
     raw_input('Press [ Enter ]: ')
-    pap.move_to_position(startX, startY, startZ - z_offset)
+    pap.move_to_position(startX, startY, startZ)
     rospy.sleep(1.0)
 
     #Then goes to endx, endy, endz and tries to grasp an object there
     o_x, o_y, o_z, o_w = pap.rotations[2]
     raw_input('Press [ Enter ] for position 2: ')
-    pap.move_to_pose_and_grasp(endX, endY, endZ - z_offset, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+    pap.move_to_pose_and_grasp(endX, endY, endZ, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
     rospy.sleep(1.0)
     pap.openGripper()
     print("Table height: {}".format(pap.table_height))

@@ -29,9 +29,10 @@ class PickAndPlace(object):
     ROT_180     = 2
     ROT_270     = 3
 
-    def __init__(self):
+    def __init__(self, z_offset=0):
         self.planner = PathPlanner("right_arm")
         self.table_height = -1
+        self.z_offset = z_offset
         self.initGripper()
 
     def findTableHeight(self, approx_x, approx_y, approx_z):
@@ -50,7 +51,7 @@ class PickAndPlace(object):
         box_pose.header.frame_id = "base"
         box_pose.pose.position.x = x_pos
         box_pose.pose.position.y = y_pos
-        box_pose.pose.position.z = z_pos - (z_width / 2)
+        box_pose.pose.position.z = z_pos + self.z_offset - (z_width / 2)
         box_pose.pose.orientation.x = 0.0
         box_pose.pose.orientation.y = 0.0
         box_pose.pose.orientation.z = 0.0
@@ -92,10 +93,10 @@ class PickAndPlace(object):
         rospy.sleep(1.0)
 
     def move_to_position(self, x, y, z):
-        self.planner.move_to_position(x, y, z)
+        self.planner.move_to_position(x, y, z + self.z_offset)
 
     def move_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
-        return self.planner.move_to_pose_planner(x, y, z, o_x, o_y, o_z, o_w)
+        return self.planner.move_to_pose_planner(x, y, z + self.z_offset, o_x, o_y, o_z, o_w)
         
     def move_to_pose_and_grasp(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         """
