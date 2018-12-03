@@ -74,10 +74,8 @@ class PathPlanner(object):
         self._group = None
         rospy.loginfo("Stopping Path Planner")
 
-    def move_to_position(self, target_position):
-        """
-            target_position: [x, y, z]
-        """
+    def move_to_position(self, x, y, z):
+        target_position = [x, y, z]
         try:
             self._group.set_position_target(target_position)
             self._group.go()
@@ -86,6 +84,7 @@ class PathPlanner(object):
             print(e)
 
     def move_to_pose(self, x, y, z, o_x, o_y, o_z, o_w):
+        print("Called move_to_pose({}, {}, {}, o_x={}, o_y={}, o_z={}, o_w={})".format(x, y, z, o_x, o_y, o_z, o_w))
         try:
             goal = create_target_pose(x=x, y=y, z=z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
             self._group.set_pose_target(goal)
@@ -96,11 +95,10 @@ class PathPlanner(object):
             return False
         return True
 
-    def move_to_position_planner(self, target_position):
+    def move_to_position_planner(self, x, y, z):
         """
             target_position: [x, y, z]
         """
-        x, y, z = target_position[0], target_position[1], target_position[2]
         try:
             goal = create_target_position(x, y, z)
             plan = self.plan_to_pose(goal, list())

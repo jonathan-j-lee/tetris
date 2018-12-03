@@ -92,7 +92,7 @@ class PickAndPlace(object):
         rospy.sleep(1.0)
 
     def move_to_position(self, x, y, z):
-        self.planner.move_to_position_planner([x, y, z])
+        self.planner.move_to_position(x, y, z)
 
     def move_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         return self.planner.move_to_pose_planner(x, y, z, o_x, o_y, o_z, o_w)

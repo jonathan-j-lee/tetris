@@ -19,24 +19,17 @@ from pick_and_place import *
 from baxter_interface import Limb
 from baxter_interface import gripper as robot_gripper
 
-"""
-    Rotations:
-        0   : straight down orientation
-        1   : 90 CW from 0
-        2   : 180 CW from 0
-        3   : 270 CW from 0
-"""
+z_offset = .030
 def main():
     pap = PickAndPlace()  
-    addTableAtHeight(pap, -0.160)
-
+    addTableAtHeight(pap, -0.185 - z_offset)
+    
+    #testMoveToRotation(pap, 0.763, -0.135, -0.170 - z_offset)
+    #testRotateBy(pap)
     #resetGripper()
-    """
-    testGrasp(pap)
-    testRotations(pap)
-    testRotateBy(pap)
-    """
-    #testPickAndPlace(pap)
+    #testGrasp(pap)
+    #testRotations(pap)
+    testPickAndPlace(pap)
 
 def addTableAtHeight(pap, z):
     pap.add_obstacle("table", 0.768, 0.032, z, 1.0, 1.0, 0.1)
@@ -63,32 +56,39 @@ def resetGripper():
     rospy.sleep(1.0)
     print('Done!')
 
+def testMoveToRotation(pap, x, y, z):
+    #GOES TO this random spot
+    raw_input('Press [ Enter ]: ')
+    pap.move_to_rotation(x, y, z, pap.ROT_0)
+    rospy.sleep(1.0)
+
 def testPickAndPlace(pap):
-    startX, startY, startZ = 0.768, 0.032, -0.160
-    endX, endY = 0.800, -0.321
+    startX, startY, startZ = 0.810, -0.114, -0.174
+    endX, endY = 0.801, -0.315
 
     raw_input('Press [Enter] to pick up object at ({}, {}, {}): '.format(startX, startY, startZ))
-    pap.move_to_rotation_and_grasp(startX, startY, startZ, pap.ROT_0)
+    pap.move_to_rotation_and_grasp(startX, startY, startZ - z_offset, pap.ROT_0)
 
+    print("Table-height: ", pap.table_height)
     pap.move_to_position(startX, startY, pap.table_height + 0.1)
     pap.move_to_rotation(endX, endY, pap.table_height + 0.01, pap.ROT_0)
 
-    raw_input('Press [Enter] to drop off object at ({}, {}, {}): '.format(endX, endY, pap.table_height))
+    raw_input('Press [Enter] to drop off object at ({}, {}, {}): '.format(endX, endY, pap.table_height - z_offset))
     pap.move_to_rotation_and_open(endX, endY, pap.table_height, pap.ROT_0)
 
 def testGrasp(pap):
     startX, startY, startZ = 0.691, 0.023, 0.069
-    endX, endY, endZ = 0.768, 0.032, -0.160
+    endX, endY, endZ = 0.810, -0.114, -0.170
 
     #GOES TO this random spot
     raw_input('Press [ Enter ]: ')
-    pap.move_to_position(startX, startY, startZ)
+    pap.move_to_position(startX, startY, startZ - z_offset)
     rospy.sleep(1.0)
 
     #Then goes to endx, endy, endz and tries to grasp an object there
     o_x, o_y, o_z, o_w = pap.rotations[2]
     raw_input('Press [ Enter ] for position 2: ')
-    pap.move_to_pose_and_grasp(endX, endY, endZ, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+    pap.move_to_pose_and_grasp(endX, endY, endZ - z_offset, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
     rospy.sleep(1.0)
     pap.openGripper()
     print("Table height: {}".format(pap.table_height))
@@ -111,10 +111,10 @@ def testRotations(pap):
     pap.move_to_rotation(x, y, z, pap.ROT_270)
 
 def testRotateBy(pap):
-    x, y, z = 0.828, -0.257, -0.024
+    x, y, z = 0.815, -0.139, -0.151
 
     raw_input("Press <Enter> to move the right arm to goal pose 1: ")
-    pap.move_to_rotation(x, y, z, pap.ROT_270)
+    pap.move_to_rotation(x, y, z, pap.ROT_0)
     #rospy.sleep(1.0)
     #print(pap.isInDesiredRotation([o_x, o_y, o_z, o_w]))
 
