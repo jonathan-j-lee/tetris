@@ -22,7 +22,7 @@ from baxter_interface import gripper as robot_gripper
 z_offset = -.030
 def main():
     pap = PickAndPlace(z_offset=z_offset)  
-    addTableAtHeight(pap, -0.185)
+    addTableAtHeight(pap, -0.182)
     
     #testMoveToRotation(pap, 0.763, -0.135, -0.170)
     #testRotateBy(pap)
@@ -63,18 +63,19 @@ def testMoveToRotation(pap, x, y, z):
     rospy.sleep(1.0)
 
 def testPickAndPlace(pap):
-    startX, startY, startZ = 0.810, -0.114, -0.174
+    startX, startY, startZ = 0.810, -0.114, -0.172
     endX, endY = 0.801, -0.315
 
     raw_input('Press [Enter] to pick up object at ({}, {}, {}): '.format(startX, startY, startZ))
     pap.move_to_rotation_and_grasp(startX, startY, startZ, pap.ROT_0)
 
     print("Table-height: ", pap.table_height)
-    pap.move_to_position(startX, startY, pap.table_height + 0.1)
-    pap.move_to_rotation(endX, endY, pap.table_height + 0.01, pap.ROT_0)
+    pap.move_to_rotation(startX, startY, pap.table_height + 0.05, pap.ROT_0)
+    pap.move_to_rotation(endX, endY, pap.table_height + 0.05, pap.ROT_0)
 
+    board_thickness = 0.00635 #cm = .25 inches
     raw_input('Press [Enter] to drop off object at ({}, {}, {}): '.format(endX, endY, pap.table_height))
-    pap.move_to_rotation_and_open(endX, endY, pap.table_height, pap.ROT_0)
+    pap.move_to_rotation_and_open(endX, endY, pap.table_height + board_thickness, pap.ROT_0)
 
 def testGrasp(pap):
     startX, startY, startZ = 0.691, 0.023, 0.069
