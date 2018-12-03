@@ -13,7 +13,7 @@ PIECE_CODES = {
 }
 
 class Robot:
-    GRIPPER_FRAME = 'left_hand'
+    GRIPPER_FRAME = 'right_hand'
 
     def __init__(self):
         self.tf_buffer = tf2_ros.Buffer()
