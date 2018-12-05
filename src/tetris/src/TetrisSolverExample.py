@@ -16,9 +16,10 @@ solver = OurSolver(
 solver.solve()
 #print(solver.getCoordinatesForARTagOfPiece(OurSolver.SQUARETILE))
 for piece in solver.getOrderForPlacement():
-    print("Piece: ", solver.tileIndexToType[piece.tile_index])
+    print("***************Piece: {}".format(solver.tileIndexToType[piece.tile_index]))
     print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
-    print("\tCoordinates: {}".format(solver.getCoordinatesForARTagOfPiece(piece)))
+    print("\tARTagCoordinates: {}".format(solver.getCoordinatesForARTagOfPiece(piece)))
+    print("\tCoMPose: {}".format(solver.getPoseForPiece(piece).pose))
 
 """
 #Example 1: Full example with error handling and table output
