@@ -2,10 +2,11 @@
 planner -- Module for performing path planning.
 """
 
+import numpy as np
+
 from geometry_msgs.msg import PoseStamped
 from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
 from moveit_msgs.msg import OrientationConstraint, Constraints, CollisionObject
-import numpy as np
 import rospy
 from shape_msgs.msg import SolidPrimitive
 
@@ -62,14 +63,8 @@ class PathPlanner:
         if self.verbose:
             rospy.logwarn('Terminated path planner.')
 
-    def create_target_pose(self, position=None, orientation=None):
-        """
-        Convert a pose as arrays into a ROS-compatible timestamped pose data type.
-
-        Arguments:
-            position: The pose position. Defaults to the `frame_id` origin.
-            orientation: The pose orientation. Defaults to the "down" orientation.
-        """
+    def create_pose(self, position=None, orientation=None):
+        """ Convert a pose as arrays into a ROS-compatible timestamped pose data type. """
         if not position:
             position = self.DEFAULT_POSITION
         if not orientation:
@@ -102,7 +97,7 @@ class PathPlanner:
         if not orientation:
             self.group.set_position_target(position)
         else:
-            self.group.set_pose_target(self.create_target_pose(position, orientation))
+            self.group.set_pose_target(self.create_pose(position, orientation))
         if self.verbose:
             self.log_pose('Moving to pose.', position, orientation)
         try:
@@ -127,7 +122,7 @@ class PathPlanner:
         """
         if not orientation_constraints:
             orientation_constraints = []
-        target = self.create_target_pose(position, orientation)
+        target = self.create_pose(position, orientation)
         if self.verbose:
             self.log_pose('Moving to pose with planner.', position, orientation)
         try:
@@ -166,6 +161,7 @@ class PathPlanner:
                 relative to the global frame `frame_id`.
             com_orientation: The orientation of the COM.
         """
+        pose = self.create_pose(com_position, com_orientation)
         obj = CollisionObject()
         obj.id, obj.operation, obj.header = name, CollisionObject.ADD, pose.header
         box = SolidPrimitive()
@@ -177,12 +173,7 @@ class PathPlanner:
                           '(x={}, y={}, z={}).'.format(name, *dimensions))
 
     def remove_obstacle(self, name):
-        """
-        Remove a named obstacle from the planning scene.
-
-        Arguments:
-            name: The name of the obstacle, as provided during its addition.
-        """
+        """ Remove a named obstacle from the planning scene. """
         obj = CollisionObject()
         obj.id, obj.operation = name, CollisionObject.REMOVE
         self.scene_publisher.publish(obj)
