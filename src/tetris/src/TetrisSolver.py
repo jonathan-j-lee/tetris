@@ -197,7 +197,7 @@ class OurSolver(object):
     frameWidth = 1 * inchToM #.0254
     pieceWidth = 2.5 * inchToM #.0635
 
-    r2 = np.sqrt(2) / 2
+    r2 = numpy.sqrt(2) / 2
     rotations = [
         (0,     1.0,     0,      0),
         (r2,    r2,     0,      0),

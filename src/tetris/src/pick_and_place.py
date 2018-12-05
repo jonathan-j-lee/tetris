@@ -12,6 +12,7 @@ from moveit_commander import MoveGroupCommander
 from tf.transformations import *
 
 from path_planner import *
+from TetrisSolver import *
 from baxter_interface import Limb, AnalogIO
 from baxter_interface import gripper as robot_gripper
 import baxter_interface
@@ -286,10 +287,10 @@ class PickAndPlace(object):
             print("\tPose for piece: ", self.getBasePoseForPiece(piece))
 
     def testPoseForPiece(self):
+        pass
         #print("Transform from board: ", self.getTransformFromBoard())
 
 ####################################Place on board code
-
     def getTransformFromARTag(self, ar_marker_id):
         """
             ar_marker_id: e.g. 'ar_marker_7'
