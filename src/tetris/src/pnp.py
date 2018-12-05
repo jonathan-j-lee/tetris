@@ -25,20 +25,21 @@ from planner import PathPlanner
 
 class PickAndPlaceTask:
     """
-    A representation of a pick-and-place task.
+    A representation of the Tetris pick-and-place task.
 
     Attributes:
         gripper_side (str): 'left' or 'right'.
-        planner: MoveIt path planner.
+        planner: The path planner.
         gripper: The gripper.
         vacuum_sensor: The vacuum sensor.
         table_height (float): The estimated z-coordinate of the table surface.
     """
     GRIP_MAX_VALUE = 175
+    Z_COORD_DELTA = 0.01
 
     def __init__(self, gripper_side='right'):
         self.gripper_side = gripper_side
-        self.planner = PathPlanner('base', gripper_side + '_arm')
+        self.planner = PathPlanner('base', gripper_side + '_arm', verbose=True)
         self.table_height = np.nan
         self.calibrate_gripper()
 
@@ -65,13 +66,13 @@ class PickAndPlaceTask:
         rospy.loginfo('Current vacuum value: {}'.format(gripper_value))
         if gripper_value > self.GRIP_MAX_VALUE:
             message = 'Detected unsafe vacuum value of {}.'.format(gripper_value)
-            rospy.logerror(message)
+            rospy.logerr(message)
             raise ValueError(message)
         return gripper_value > threshold
 
     def calibrate_gripper(self):
         """ Initialize the gripper and its vacuum sensor. """
-        self.gripper = robot_gripper.Gripper(self.gripper_side)
+        self.gripper = Gripper(self.gripper_side)
         self.gripper.calibrate()
         self.vacuum_sensor = AnalogIO(self.gripper_side + '_vacuum_sensor_analog')
         rospy.loginfo('Calibrated gripper. (type={})'.format(self.gripper.type()))
@@ -87,6 +88,7 @@ class PickAndPlaceTask:
         self.gripper.close()
         rospy.sleep(delay)
         rospy.loginfo('Closed gripper.')
+
 
 """
     r2 = np.sqrt(2)/2

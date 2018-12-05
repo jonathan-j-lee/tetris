@@ -55,7 +55,7 @@ class PathPlanner:
         self.group.set_workspace(workspace)
         rospy.sleep(0.5)  # Sleep to ensure initialization has finished.
         if verbose:
-            rospy.info('Initialized path planner.')
+            rospy.loginfo('Initialized path planner.')
 
     def shutdown(self):
         """ Stop the path planner. """
@@ -79,10 +79,10 @@ class PathPlanner:
     def log_pose(self, msg, position, orientation=None):
         """ Logs the given pose. """
         if not orientation:
-            rospy.info('{} (x={}, y={}, z={})'.format(msg, *position))
+            rospy.loginfo('{} (x={}, y={}, z={})'.format(msg, *position))
         else:
             template = '{} (x={}, y={}, z={}, o_x={}, o_y={}, o_z={}, o_w={})'
-            rospy.info(template.format(msg, *position, *orientation))
+            rospy.loginfo(template.format(msg, *np.concatenate((position, orientation))))
 
     def move_to_pose(self, position, orientation=None):
         """
