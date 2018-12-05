@@ -280,9 +280,9 @@ class PickAndPlace(object):
         )
         self.solver.solve()
         for piece in self.solver.getOrderForPlacement():
-            print("Piece: ", self.solver.tileIndexToType[piece.tile_index])
+            print("Piece: ", self.solver.tileTypes[piece.tile_index].__name__)
             print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
-            print("\tCoordinates: {}".format(self.solver.getCoordinatesForPiece(piece)))
+            print("\tCoordinates: {}".format(self.solver.getCoordinatesForARTagOfPiece(piece)))
             print("\tPose for piece: ", self.getBasePoseForPiece(piece))
 
     def testPoseForPiece(self):

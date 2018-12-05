@@ -191,13 +191,12 @@ class OurSolver(object):
     REVERSELTILE = 4
     TTILE = 5
     LTILE = 6
-    tileIndexToType = ["SquareTile", "LineTile", "STile", "ZTile", "ReverseLTile", "TTile", "LTile"]
+    tileTypes = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
 
     inchToM = .0254 #1" = 2.54cm
     frameWidth = 1 * inchToM #.0254
-    pieceWidth = 2.5 * inchToM #.0635
 
-    r2 = np.sqrt(2) / 2
+    r2 = numpy.sqrt(2) / 2
     rotations = [
         (0,     1.0,     0,      0),
         (r2,    r2,     0,      0),
@@ -209,10 +208,10 @@ class OurSolver(object):
     ROT_180     = 2
     ROT_270     = 3
 
-    board_ar_marker_id = "ar_marker_7"
+    board_ar_marker_id = "ar_marker_8"
 
     def __init__(self, boardRows=6, boardCols=8, numTiles=[2, 2, 2, 1, 2, 2, 1]):
-        self.tiles = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
+        self.tiles = tileTypes
         self.problem = TetrisSolver(
             boardRows = boardRows,
             boardCols = boardCols,
@@ -281,7 +280,7 @@ class OurSolver(object):
             pieceOrder.extend(rowOfPieces)
         return pieceOrder
 
-    def getCoordinatesForPiece(self, piece):
+    def getCoordinatesForARTagOfPiece(self, piece):
         """
             Gets coordinates of the Piece (center of AR tag) with respect to top left corner of the board in the board's frame
             Returns the coordinates for the piece as an array of tuples:
@@ -297,8 +296,8 @@ class OurSolver(object):
         offset_y = -(self.frameWidth / 2)
 
         #offset x,y should be the exact top left corner of the frame
-        x = (piece.col * self.pieceWidth) + (self.pieceWidth / 2)
-        y = (piece.row * self.pieceWidth) + (self.pieceWidth / 2)
+        x = (piece.col * Tile.tileWidth) + (Tile.tileWidth / 2)
+        y = (piece.row * Tile.tileWidth) + (Tile.tileWidth / 2)
 
         return (-x + offset_x, -y + offset_y, piece.rotation)
 
@@ -306,14 +305,15 @@ class OurSolver(object):
         """
             Returns PoseStamped for Piece (location that the center of mass of the piece should be place) w.r.t. top left of board
         """
-        x, y, rot = self.getCoordinatesForPiece(piece)
+        x, y, rot = self.getCoordinatesForARTagOfPiece(piece)
         z = 0
         rotation_quaternion = self.rotations[rot]
+        tileType = self.tileTypes[piece.tile_index]
 
         piece_pose = PoseStamped()
         piece_pose.header.frame_id = self.board_ar_marker_id
-        piece_pose.pose.position.x = x
-        piece_pose.pose.position.y = y
+        piece_pose.pose.position.x = x + tileType.centerOfMassOffset[0]
+        piece_pose.pose.position.y = y + tileType.centerOfMassOffset[1]
         piece_pose.pose.position.z = z
         piece_pose.pose.orientation.x = rotation_quaternion[0]
         piece_pose.pose.orientation.y = rotation_quaternion[1]
@@ -336,6 +336,9 @@ class Tile:
     tile = [[]]
     uniqueRotations = 4 #By default, there are 4 unique rotational positions.
 
+    inchToM = .0254 #1" = 2.54cm
+    tileWidth = 2.5 * inchToM #.0635
+
     '''
         Rotate the tile 90 degrees CW
     '''
@@ -351,6 +354,13 @@ class Tile:
                 rotTile[j][tileRows - i - 1] = tile[i][j]
         return rotTile
 
+"""
+    0: empty space
+    1: tile
+    2: tile with AR tag
+    centerOfMassOffset: offset from AR tag center
+"""
+
 '''
     Square Tile
     AR Tag 0
@@ -361,6 +371,10 @@ class SquareTile(Tile):
         [1, 1]
     ]
     uniqueRotations = 1
+
+    xOffset = numpy.sqrt(2) + (self.tileWidth / 2)
+    yOffset = - (numpy.sqrt(2) + (self.tileWidth / 2))
+    centerOfMassOffset = (xOffset, yOffset)
 
 '''
     Left L Tile
@@ -375,6 +389,10 @@ class LTile(Tile):
         [0, 1]
     ]
 
+    xOffset = - (self.tileWidth)
+    yOffset = - ((self.tileWidth / 2) + 1.75)
+    centerOfMassOffset = (xOffset, yOffset)
+
 '''
     Right L Tile
     AR Tag 4
@@ -385,6 +403,10 @@ class ReverseLTile(Tile):
         [1, 1, 1]
     ]
 
+    xOffset = - ((self.tileWidth / 2) + 1.75)
+    yOffset = - (self.tileWidth)
+    centerOfMassOffset = (xOffset, yOffset)
+
 '''
     T Tile
     AR Tag 5
@@ -394,6 +416,10 @@ class TTile(Tile):
         [1,1,1],
         [0,2,0]
     ]
+
+    xOffset = 0
+    yOffset = (self.tileWidth / 2) + 2 
+    centerOfMassOffset = (xOffset, yOffset)
 
 '''
     Line Tile
@@ -409,6 +435,10 @@ class LineTile(Tile):
     ]
     uniqueRotations = 2
 
+    xOffset = 0
+    yOffset = (self.tileWidth * 3 / 2)
+    centerOfMassOffset = (xOffset, yOffset)
+
 '''
     Z Tile
     AR Tag 3
@@ -418,10 +448,14 @@ class ZTile(Tile):
         [0,1,1]'''
     tile = [
         [0,1],
-        [1,2],
+        [2,1],
         [1,0]
     ]
     uniqueRotations = 2
+
+    xOffset = -((self.tileWidth / 2) + 2) 
+    yOffset = 0
+    centerOfMassOffset = (xOffset, yOffset)
 
 '''
     S Tile
@@ -436,6 +470,10 @@ class STile(Tile):
         [0,1]
     ]
     uniqueRotations = 2
+
+    xOffset = (self.tileWidth / 2) + 2
+    yOffset = 0
+    centerOfMassOffset = (xOffset, yOffset)
 
 #Helper functions
 '''
