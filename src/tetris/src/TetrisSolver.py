@@ -13,6 +13,7 @@ __maintainer__ = "Caleb Begly"
 import numpy
 import copy
 import operator
+from geometry_msgs.msg import PoseStamped
 
 class TetrisSolver(object):
     '''
@@ -196,6 +197,20 @@ class OurSolver(object):
     frameWidth = 1 * inchToM #.0254
     pieceWidth = 2.5 * inchToM #.0635
 
+    r2 = np.sqrt(2) / 2
+    rotations = [
+        (0,     1.0,     0,      0),
+        (r2,    r2,     0,      0),
+        (1.0,   0.0,     0,      0),
+        (r2,    -r2,    0,      0)
+    ]
+    ROT_0       = 0
+    ROT_90      = 1
+    ROT_180     = 2
+    ROT_270     = 3
+
+    board_ar_marker_id = "ar_marker_7"
+
     def __init__(self, boardRows=6, boardCols=8, numTiles=[2, 2, 2, 1, 2, 2, 1]):
         self.tiles = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
         self.problem = TetrisSolver(
@@ -229,6 +244,9 @@ class OurSolver(object):
             print("No solution found")
 
     def getOrderForPlacement(self):
+        """
+            Returns array of solution Pieces in order from top left corner of board to bottom right corner
+        """
         pieces = []
         maxRow = 0
         for tilePlacement in self.problem.solution:
@@ -265,7 +283,7 @@ class OurSolver(object):
 
     def getCoordinatesForPiece(self, piece):
         """
-            Gets coordinates of the Piece with respect to top left corner of the board in the board's frame
+            Gets coordinates of the Piece (center of AR tag) with respect to top left corner of the board in the board's frame
             Returns the coordinates for the piece as an array of tuples:
                 ((x, y, rotation))
 
@@ -283,6 +301,26 @@ class OurSolver(object):
         y = (piece.row * self.pieceWidth) + (self.pieceWidth / 2)
 
         return (-x + offset_x, -y + offset_y, piece.rotation)
+
+    def getPoseForPiece(self, piece):
+        """
+            Returns PoseStamped for Piece (location that the center of mass of the piece should be place) w.r.t. top left of board
+        """
+        x, y, rot = self.getCoordinatesForPiece(piece)
+        z = 0
+        rotation_quaternion = self.rotations[rot]
+
+        piece_pose = PoseStamped()
+        piece_pose.header.frame_id = self.board_ar_marker_id
+        piece_pose.pose.position.x = x
+        piece_pose.pose.position.y = y
+        piece_pose.pose.position.z = z
+        piece_pose.pose.orientation.x = rotation_quaternion[0]
+        piece_pose.pose.orientation.y = rotation_quaternion[1]
+        piece_pose.pose.orientation.z = rotation_quaternion[2]
+        piece_pose.pose.orientation.w = rotation_quaternion[3]
+        return piece_pose
+
 
 class Piece:
     def __init__(self, tile_index, row, col, rotation):

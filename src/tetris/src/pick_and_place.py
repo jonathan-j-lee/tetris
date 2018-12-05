@@ -2,6 +2,7 @@ import sys
 import rospy
 import numpy as np
 import tf2_ros 
+import tf2_geometry_msgs
 
 from moveit_msgs.msg import OrientationConstraint
 from geometry_msgs.msg import TransformStamped
@@ -31,9 +32,12 @@ class PickAndPlace(object):
 
     def __init__(self, z_offset=0):
         self.planner = PathPlanner("right_arm")
+
         self.table_height = -1
         self.z_offset = z_offset
+
         self.initGripper()
+        self.runTetrisSolver()
 
     def findTableHeight(self, approx_x, approx_y, approx_z):
         rot = self.rotations[0]
@@ -62,19 +66,7 @@ class PickAndPlace(object):
     def remove_obstacle(self, name):
         self.planner.remove_obstacle(name)
 
-    def isGraspingObject(self):
-        """
-        Both the topics /robot/analog_io/left_vacuum_sensor_analog/value_uint32 and /robot/analog_io/left_vacuum_sensor_analog/state 
-        give you the direct analog readings from the vacuum sensor in the vacuum gripper. According to our gripper engineer, the values mean:
-
-        Value       Meaning
-        0-46 :      The vacuum gripper is likely not attached to an object
-        47-175:     The vacuum is likely attached to an object (usually around 150 when grasping)
-        175+:       There is likely a short between 5V and signal on the sensor.
-        """
-        threshold = 30
-        print("-------------Curr vacuum state: {}".format(baxter_interface.AnalogIO('right_vacuum_sensor_analog').state()))
-        return baxter_interface.AnalogIO('right_vacuum_sensor_analog').state() > threshold
+###################Gripper stuff
 
     def initGripper(self):
         #Set up the right gripper
@@ -91,6 +83,22 @@ class PickAndPlace(object):
         print('Opening gripper...')
         self.right_gripper.open()
         rospy.sleep(1.0)
+
+    def isGraspingObject(self):
+        """
+        Both the topics /robot/analog_io/left_vacuum_sensor_analog/value_uint32 and /robot/analog_io/left_vacuum_sensor_analog/state 
+        give you the direct analog readings from the vacuum sensor in the vacuum gripper. According to our gripper engineer, the values mean:
+
+        Value       Meaning
+        0-46 :      The vacuum gripper is likely not attached to an object
+        47-175:     The vacuum is likely attached to an object (usually around 150 when grasping)
+        175+:       There is likely a short between 5V and signal on the sensor.
+        """
+        threshold = 30
+        print("-------------Curr vacuum state: {}".format(baxter_interface.AnalogIO('right_vacuum_sensor_analog').state()))
+        return baxter_interface.AnalogIO('right_vacuum_sensor_analog').state() > threshold
+
+######################Pick and place stuff
 
     def move_to_position(self, x, y, z):
         self.planner.move_to_position(x, y, z + self.z_offset)
@@ -214,7 +222,6 @@ class PickAndPlace(object):
         tfBuffer = tf2_ros.Buffer()
         tfListener = tf2_ros.TransformListener(tfBuffer)
 
-        # Loop until the node is killed with Ctrl-C
         while True:
             try:
                 trans = tfBuffer.lookup_transform("base", "reference/right_gripper", rospy.Time())
@@ -223,7 +230,7 @@ class PickAndPlace(object):
                 continue
             else:
                 break
-        return trans
+        return trans      
 
     def getCurrPosition(self):
         trans = self.getTransformToRightGripper()
@@ -262,3 +269,64 @@ class PickAndPlace(object):
         error = np.sum(np.abs(curr_pos_list - np.array(target_position)))
         print("Error: {}".format(error))
         return error < error_tolerance
+
+####################################Tetris Solver stuff
+
+    def runTetrisSolver(self):
+        self.solver = OurSolver(
+            boardRows = 6,
+            boardCols = 8,
+            numTiles = [2, 2, 2, 2, 1, 2, 1]
+        )
+        self.solver.solve()
+        for piece in self.solver.getOrderForPlacement():
+            print("Piece: ", self.solver.tileIndexToType[piece.tile_index])
+            print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
+            print("\tCoordinates: {}".format(self.solver.getCoordinatesForPiece(piece)))
+            print("\tPose for piece: ", self.getBasePoseForPiece(piece))
+
+    def testPoseForPiece(self):
+        #print("Transform from board: ", self.getTransformFromBoard())
+
+####################################Place on board code
+
+    def getTransformFromARTag(self, ar_marker_id):
+        """
+            ar_marker_id: e.g. 'ar_marker_7'
+        """
+        tfBuffer = tf2_ros.Buffer()
+        tfListener = tf2_ros.TransformListener(tfBuffer)
+
+        while True:
+            try:
+                trans = tfBuffer.lookup_transform("base", ar_marker_id, rospy.Time())
+                #print(trans)
+            except (tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException):
+                continue
+            else:
+                break
+        return trans  
+
+    def getTransformFromBoard(self):
+        return self.getTransformFromARTag("ar_marker_7")
+
+    def getBasePoseForPiece(self, piece):
+        """
+            get coordinates in board frame (wrt ar_marker_7)
+            transform those coordinates to base frame
+        """
+        board_pose_stamped = self.solver.getPoseForPiece(piece)
+        transform_from_board_to_base = self.getTransformFromBoard()
+        base_pose_stamped = tf2_geometry_msgs.do_transform_pose(board_pose_stamped, transform_from_board_to_base)
+        return base_pose_stamped
+
+    def movePieceToSolution(self, piece):
+        pose_stamped = self.getBasePoseForPiece(piece)
+        x = pose_stamped.pose.position.x
+        y = pose_stamped.pose.position.y 
+        z = pose_stamped.pose.position.z 
+        o_x = pose_stamped.pose.orientation.x 
+        o_y = pose_stamped.pose.orientation.y 
+        o_z = pose_stamped.pose.orientation.z 
+        o_w = pose_stamped.pose.orientation.w 
+        self.move_to_pose(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
