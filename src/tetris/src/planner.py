@@ -33,9 +33,6 @@ class PathPlanner:
     DEFAULT_POSITION = np.zeros(3)
     DEFAULT_ORIENTATION = np.array([0, -1, 0, 0])
     PLANNING_SCENE_TOPIC = '/collision_object'
-    CONSTRAINT_TYPES = {
-        'orientation': 0,
-    }
 
     def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
         if not workspace:

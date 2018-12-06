@@ -35,35 +35,42 @@ __all__ = ['TileType', 'Tile', 'TILE_TYPES', 'EMPTY', 'FLAT', 'AR_TAG',
 EMPTY, FLAT, AR_TAG = 0, 1, 2
 ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270 = 0, 1, 2, 3
 
-TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'pattern'])
+TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
+                                   'y_offset', 'pattern'])
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
 
-SQUARE_TILE = TileType(0, 'square', 1, [
+SQUARE_TILE = TileType(0, 'square', 1, -3.7071, -3.7071, [
     [FLAT, AR_TAG],
     [FLAT, FLAT],
 ])
-LINE_TILE = TileType(1, 'line', 2, [
-    [AR_TAG, FLAT, FLAT, FLAT],
+LINE_TILE = TileType(1, 'line', 2, 0, -9, [
+    [AR_TAG],
+    [FLAT],
+    [FLAT],
+    [FLAT],
 ])
-S_TILE = TileType(2, 's', 2, [
-    [EMPTY, AR_TAG, FLAT],
-    [FLAT, FLAT, EMPTY],
+S_TILE = TileType(2, 's', 2, -5, 0, [
+    [FLAT, EMPTY],
+    [FLAT, AR_TAG],
+    [EMPTY, FLAT],
 ])
-Z_TILE = TileType(3, 'z', 2, [
-    [FLAT, AR_TAG, EMPTY],
-    [EMPTY, FLAT, FLAT],
+Z_TILE = TileType(3, 'z', 2, 5, 0, [
+    [EMPTY, FLAT],
+    [AR_TAG, FLAT],
+    [FLAT, EMPTY],
 ])
-REVERSE_L_TILE = TileType(4, 'reverse_l', 4, [
+REVERSE_L_TILE = TileType(4, 'reverse_l', 4, 4.75, -6, [
     [AR_TAG, EMPTY, EMPTY],
     [FLAT, FLAT, FLAT],
 ])
-T_TILE = TileType(5, 't', 4, [
+T_TILE = TileType(5, 't', 4, 0, 5, [
     [FLAT, FLAT, FLAT],
     [EMPTY, AR_TAG, EMPTY],
 ])
-L_TILE = TileType(6, 'l', 4, [
-    [FLAT, FLAT, FLAT],
-    [AR_TAG, EMPTY, EMPTY],
+L_TILE = TileType(6, 'l', 4, 6, -4.75, [
+    [AR_TAG, FLAT],
+    [EMPTY, FLAT],
+    [EMPTY, FLAT],
 ])
 
 TILE_TYPES = {tile_type.name: tile_type for tile_type in
@@ -118,7 +125,6 @@ def can_place_tile(board, tile_pattern, row, column):
 
 
 def place_tile(board, tile_pattern, row, column):
-    rows, columns = board.shape
     pattern_rows, pattern_columns = tile_pattern.shape
     for i in range(pattern_rows):
         for j in range(pattern_columns):
@@ -189,9 +195,9 @@ def display_solution(rows, columns, solution, scale=1, offset=2):
     for i in range(rows):
         print(' '*offset, end='')
         for j in range(columns):
-            n = board[i, j]%16
-            code = '{}'.format(int(n/2 + 31))
-            if n%2:
+            fmt_id = board[i, j]%16
+            code = '{}'.format(int(fmt_id/2 + 31))
+            if fmt_id%2:
                 code += ';1'
             print('\x1b[{}m'.format(code) + '\u2588'*2 + '\x1b[0m', end='')
         print()
