@@ -16,6 +16,7 @@ import operator
 from geometry_msgs.msg import PoseStamped
 
 from Pieces import *
+from tf.transformations import *
 
 class TetrisSolver(object):
     '''
@@ -195,9 +196,6 @@ class OurSolver(object):
     LTILE = 6
     tileTypes = [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile]
 
-    inchToM = .0254 #1" = 2.54cm
-    frameWidth = 1 * inchToM #.0254
-
     r2 = numpy.sqrt(2) / 2
     rotations = [
         (0,     1.0,     0,      0),
@@ -288,20 +286,19 @@ class OurSolver(object):
             Returns the coordinates for the piece as an array of tuples:
                 ((x, y, rotation))
 
-            TODO: Get orientation of the frame
-            x   ^
-                |
-
-            y   <--
+            Board top left corner frame:
+                ^
+              y |
+                x -->
         """
-        offset_x = -(self.frameWidth / 2)
-        offset_y = -(self.frameWidth / 2)
+        offset_x = Piece.frameWidth / 2
+        offset_y = -(Piece.frameWidth / 2)
 
         #offset x,y should be the exact top left corner of the frame
-        x = (piece.col * Tile.tileWidth) + (Tile.tileWidth / 2)
-        y = (piece.row * Tile.tileWidth) + (Tile.tileWidth / 2)
+        x = (piece.col * Piece.tileWidth) + (Piece.tileWidth / 2)
+        y = (piece.row * Piece.tileWidth) + (Piece.tileWidth / 2)
 
-        return (-x + offset_x, -y + offset_y, piece.rotation)
+        return (x + offset_x, -y + offset_y, piece.rotation)
 
     def getPoseForPiece(self, piece):
         """
@@ -312,11 +309,34 @@ class OurSolver(object):
         rotation_quaternion = self.rotations[rot]
         tileType = self.getTileType(piece)
 
+        """
+            x, y = location for AR tag
+            x + comOffset, y + comOffset = location for CoM if not rotated
+            rotate by specified rotation about the AR tag point (x, y):
+                equivalent to 1) rotate xCoMOffset, yCoMOffset by rot
+                2) translate that point by x, y
+        """
+        rad = (-numpy.pi / 2) * rot #rot = # of rotations by 90 counter CW
+        z_axis = (0, 0, 1)
+        M = rotation_matrix(rad, z_axis)
+        point_CoM = numpy.array([
+                [tileType.centerOfMassOffset[0]],
+                [tileType.centerOfMassOffset[1]],
+                [0]
+            ])
+        rotated_CoM = numpy.dot(M, point_CoM)
+        translation = numpy.array([
+                [x],
+                [y],
+                [z]
+            ])
+        transformed_CoM = (rotated_CoM + translation)[0]
+
         piece_pose = PoseStamped()
         piece_pose.header.frame_id = self.board_ar_marker_id
-        piece_pose.pose.position.x = x + tileType.centerOfMassOffset[0]
-        piece_pose.pose.position.y = y + tileType.centerOfMassOffset[1]
-        piece_pose.pose.position.z = z
+        piece_pose.pose.position.x = transformed_CoM[0]
+        piece_pose.pose.position.y = transformed_CoM[1]
+        piece_pose.pose.position.z = transformed_CoM[2] #should be 0
         piece_pose.pose.orientation.x = rotation_quaternion[0]
         piece_pose.pose.orientation.y = rotation_quaternion[1]
         piece_pose.pose.orientation.z = rotation_quaternion[2]

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
+<!--
+       ^
+    y: |
+    x: ->
+    z: .
+-->
+<multimarker markers="4">
+    <!--master tag, center of this tag will be the origin of this bundle-->
+    <marker index="8" status="1"> <!--top left marker-->
+        <!--Corners go SW, SE, NE, NW-->
+        <corner x="-3" y="-3" z="0" /> <!--SW-->
+        <corner x="3" y="-3" z="0" /> <!--SE-->
+        <corner x="3" y="3" z="0" /> <!--NE-->
+        <corner x="-3" y="3" z="0" /> <!--NW-->
+    </marker>
+
+    <!--
+        51cm width between markers on board 
+        38.5cm height
+    -->
+    <marker index="7" status="1"> <!--top right marker-->
+        <corner x="54" y="-3" z="0" />
+        <corner x="60" y="-3" z="0" />
+        <corner x="60" y="3" z="0" />
+        <corner x="54" y="3" z="0" />
+    </marker>
+    <marker index="9" status="1"> <!--bottom left marker-->
+        <corner x="-3" y="-47.5" z="0" />
+        <corner x="3" y="-47.5" z="0" />
+        <corner x="3" y="-41.5" z="0" />
+        <corner x="-3" y="-41.5" z="0" />
+    </marker>
+    <marker index="10" status="1"> <!--bottom right marker-->
+        <corner x="54" y="-47.5" z="0" />
+        <corner x="60" y="-47.5" z="0" />
+        <corner x="60" y="-41.5" z="0" />
+        <corner x="54" y="-41.5" z="0" />
+    </marker>
+</multimarker>

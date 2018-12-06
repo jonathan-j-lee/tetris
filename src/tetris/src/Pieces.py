@@ -1,6 +1,11 @@
 import numpy as np
 
 class Piece:
+    inchToM = .0254 #1" = 2.54cm
+    tileWidth = 2.5 * inchToM #.0635
+    frameWidth = 1 * inchToM #.0254
+    boardThickness = .01 #m = 1cm
+
     def __init__(self, tile_index, row, col, rotation):
         self.tile_index = tile_index
         self.row = row
@@ -13,9 +18,6 @@ class Piece:
 class Tile:
     tile = [[]]
     uniqueRotations = 4 #By default, there are 4 unique rotational positions.
-
-    inchToM = .0254 #1" = 2.54cm
-    tileWidth = 2.5 * inchToM #.0635
 
     '''
         Rotate the tile 90 degrees CW
@@ -55,8 +57,8 @@ class SquareTile(Tile):
     uniqueRotations = 1
 
     ar_marker_id = "ar_marker_0"
-    xOffset = (np.sqrt(2) / 100) + (Tile.tileWidth / 2)
-    yOffset = - ((np.sqrt(2) / 100) + (Tile.tileWidth / 2))
+    xOffset = (np.sqrt(2) / 100) + (Piece.tileWidth / 2)
+    yOffset = - ((np.sqrt(2) / 100) + (Piece.tileWidth / 2))
     centerOfMassOffset = (xOffset, yOffset)
 
 '''
@@ -75,7 +77,7 @@ class LineTile(Tile):
 
     ar_marker_id = "ar_marker_1"
     xOffset = 0
-    yOffset = -(Tile.tileWidth * 3 / 2)
+    yOffset = -(Piece.tileWidth * 3 / 2)
     centerOfMassOffset = (xOffset, yOffset)
 
 '''
@@ -93,7 +95,7 @@ class STile(Tile):
     uniqueRotations = 2
 
     ar_marker_id = "ar_marker_2"
-    xOffset = -((Tile.tileWidth / 2) + (2 / 100))
+    xOffset = -((Piece.tileWidth / 2) + (2 / 100))
     yOffset = 0
     centerOfMassOffset = (xOffset, yOffset)
 
@@ -112,7 +114,7 @@ class ZTile(Tile):
     uniqueRotations = 2
 
     ar_marker_id = "ar_marker_3"
-    xOffset = (Tile.tileWidth / 2) + (2/100)
+    xOffset = (Piece.tileWidth / 2) + (2/100)
     yOffset = 0
     centerOfMassOffset = (xOffset, yOffset)
 
@@ -127,8 +129,8 @@ class ReverseLTile(Tile):
     ]
 
     ar_marker_id = "ar_marker_4"
-    xOffset = (Tile.tileWidth / 2) + (1.75/100)
-    yOffset = - (Tile.tileWidth)
+    xOffset = (Piece.tileWidth / 2) + (1.75/100)
+    yOffset = - (Piece.tileWidth)
     centerOfMassOffset = (xOffset, yOffset)
 
 '''
@@ -143,7 +145,7 @@ class TTile(Tile):
 
     ar_marker_id = "ar_marker_5"
     xOffset = 0
-    yOffset = (Tile.tileWidth / 2) + (2/100) 
+    yOffset = (Piece.tileWidth / 2) + (2/100) 
     centerOfMassOffset = (xOffset, yOffset)
 
 '''
@@ -160,6 +162,6 @@ class LTile(Tile):
     ]
 
     ar_marker_id = "ar_marker_6"
-    xOffset = Tile.tileWidth
-    yOffset = - ((Tile.tileWidth / 2) + (1.75 / 100))
+    xOffset = Piece.tileWidth
+    yOffset = - ((Piece.tileWidth / 2) + (1.75 / 100))
     centerOfMassOffset = (xOffset, yOffset)

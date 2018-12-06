@@ -13,6 +13,7 @@ from tf.transformations import *
 
 from path_planner import *
 from TetrisSolver import *
+from Pieces import *
 from baxter_interface import Limb, AnalogIO
 from baxter_interface import gripper as robot_gripper
 import baxter_interface
@@ -106,6 +107,18 @@ class PickAndPlace(object):
 
     def move_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         return self.planner.move_to_pose_planner(x, y, z + self.z_offset, o_x, o_y, o_z, o_w)
+
+    def move_to_pose_on_table(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
+        if self.table_height == -1:
+            print("FORGOT TO SET TABLE HEIGHT")
+            return False
+        return self.move_to_pose(x, y, self.table_height + 0.008, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+
+    def move_to_pose_on_board(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
+        if self.table_height == -1:
+            print("FORGOT TO SET TABLE HEIGHT")
+            return False
+        return self.move_to_pose(x, y, self.table_height + Piece.boardThickness, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
         
     def move_to_pose_and_grasp(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         """
@@ -349,34 +362,26 @@ class PickAndPlace(object):
         o_x, o_y, o_z, o_w = piece_CoM_pose_wrt_base.orientation.x, piece_CoM_pose_wrt_base.orientation.y, piece_CoM_pose_wrt_base.orientation.z, piece_CoM_pose_wrt_base.orientation.w
         e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
 
-        #only care about the rotation about z axis
-        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2))
+        # orientation may be off about x, y axis of AR tag
+        # but we only care about the rotation about z axis (this is for figuring out the orientation of the gripper to pick up the piece in)
+        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2)) #off by 90 deg CW for some reason
         print(new_ox, new_oy, new_oz, new_ow)
+        return self.move_to_pose_on_table(x, y, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)
 
-        if self.table_height == -1:
-            print("FORGOT TO SET TABLE HEIGHT")
-        #self.move_to_pose(x, y, self.table_height + 0.008, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)
+    def move_to_piece_solution_pose(self, piece):
+        piece_CoM_pose_wrt_base = self.getBasePoseForPiece(piece)
+        return self.move_to_pose_on_board(x, y, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)        
 
     def getTransformFromBoard(self):
         return self.getTransformFromARTag(self.solver.board_ar_marker_id)
 
     def getBasePoseForPiece(self, piece):
         """
-            get coordinates in board frame (wrt ar_marker_7)
+            get coordinates in board frame (wrt top left corner, i.e. ar_marker_8)
             transform those coordinates to base frame
         """
+        #Pose of CoM w.r.t. top left AR tag of board
         board_pose_stamped = self.solver.getPoseForPiece(piece)
         transform_from_board_to_base = self.getTransformFromBoard()
-        base_pose_stamped = tf2_geometry_msgs.do_transform_pose(board_pose_stamped, transform_from_board_to_base)
-        return base_pose_stamped
-
-    def movePieceToSolution(self, piece):
-        pose_stamped = self.getBasePoseForPiece(piece)
-        x = pose_stamped.pose.position.x
-        y = pose_stamped.pose.position.y 
-        z = pose_stamped.pose.position.z 
-        o_x = pose_stamped.pose.orientation.x 
-        o_y = pose_stamped.pose.orientation.y 
-        o_z = pose_stamped.pose.orientation.z 
-        o_w = pose_stamped.pose.orientation.w 
-        self.move_to_pose(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        base_pose = tf2_geometry_msgs.do_transform_pose(board_pose_stamped, transform_from_board_to_base).pose
+        return base_pose
