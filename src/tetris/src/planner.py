@@ -2,8 +2,8 @@
 planner -- Module for performing path planning.
 """
 
+from __future__ import division, generators, print_function, unicode_literals
 import numpy as np
-
 from geometry_msgs.msg import PoseStamped
 from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
 from moveit_msgs.msg import OrientationConstraint, Constraints, CollisionObject
@@ -25,7 +25,6 @@ class PathPlanner:
             z coordinates.
         group_name (str): The MoveIt group name (for example, 'right_arm').
         time_limit (float): The maximum number of seconds MoveIt will plan for.
-        verbose (bool): If true, the planner will log messages to ROS.
         robot: The MoveIt robot commander.
         scene: The planning scene.
         group: The MoveIt MoveGroup.
@@ -38,12 +37,11 @@ class PathPlanner:
         'orientation': 0,
     }
 
-    def __init__(self, frame_id, group_name, time_limit=5, workspace=None, verbose=False):
+    def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
         if not workspace:
             workspace = [-2, -2, -2, 2, 2, 2]
         self.frame_id, self.workspace = frame_id, workspace
-        self.group_name = group_name
-        self.time_limit, self.verbose = time_limit, verbose
+        self.time_limit, self.group_name = time_limit, group_name
         self.robot = RobotCommander()
         self.scene = PlanningSceneInterface()
         self.group = MoveGroupCommander(group_name)
@@ -54,13 +52,13 @@ class PathPlanner:
         self.group.set_planning_time(time_limit)
         self.group.set_workspace(workspace)
         rospy.sleep(0.5)  # Sleep to ensure initialization has finished.
-        if verbose:
+        if rospy.get_param('verbose'):
             rospy.loginfo('Initialized path planner.')
 
     def shutdown(self):
         """ Stop the path planner. """
         del self.group
-        if self.verbose:
+        if rospy.get_param('verbose'):
             rospy.logwarn('Terminated path planner.')
 
     def create_pose(self, position=None, orientation=None):
@@ -98,7 +96,7 @@ class PathPlanner:
             self.group.set_position_target(position)
         else:
             self.group.set_pose_target(self.create_pose(position, orientation))
-        if self.verbose:
+        if rospy.get_param('verbose'):
             self.log_pose('Moving to pose.', position, orientation)
         try:
             self.group.go()
@@ -123,7 +121,7 @@ class PathPlanner:
         if not orientation_constraints:
             orientation_constraints = []
         target = self.create_pose(position, orientation)
-        if self.verbose:
+        if rospy.get_param('verbose'):
             self.log_pose('Moving to pose with planner.', position, orientation)
         try:
             plan = self.plan_to_pose(target, orientation_constraints)
@@ -168,7 +166,7 @@ class PathPlanner:
         box.type, box.dimensions = SolidPrimitive.BOX, dimensions
         obj.primitives, obj.primitive_poses = [box], [pose.pose]
         self.scene_publisher.publish(obj)
-        if self.verbose:
+        if rospy.get_param('verbose'):
             rospy.loginfo('Added box object "{}" to planning scene: '
                           '(x={}, y={}, z={}).'.format(name, *dimensions))
 
@@ -177,7 +175,7 @@ class PathPlanner:
         obj = CollisionObject()
         obj.id, obj.operation = name, CollisionObject.REMOVE
         self.scene_publisher.publish(obj)
-        if self.verbose:
+        if rospy.get_param('verbose'):
             rospy.loginfo('Removed object "{}" from planning scene.'.format(name))
 
     def make_orientation_constraint(self, orientation, link_id):

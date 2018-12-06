@@ -8,6 +8,7 @@ from baxter_interface import Limb, Gripper, AnalogIO
 import numpy as np
 import rospy
 
+from env import PNPEnvironment
 from planner import PathPlanner
 
 
@@ -17,16 +18,15 @@ class SuctionPNPTask:
 
     Attributes:
         gripper_side (str): 'left' or 'right'.
-        verbose (bool): Whether the task should log to ROS.
         planner: The path planner.
         gripper: The gripper.
         vacuum_sensor: The vacuum sensor.
     """
     GRIP_MAX_VALUE = 175
 
-    def __init__(self, gripper_side='right', verbose=False):
-        self.gripper_side, self.verbose = gripper_side, verbose
-        self.planner = PathPlanner('base', gripper_side + '_arm', verbose=verbose)
+    def __init__(self, gripper_side='right'):
+        self.gripper_side = gripper_side
+        self.planner = PathPlanner('base', gripper_side + '_arm')
         self.calibrate_gripper()
 
     def is_grasping(self, threshold=50):
@@ -49,7 +49,8 @@ class SuctionPNPTask:
             threshold (int): Values above this threshold constitute a grip.
         """
         gripper_value = self.vacuum_sensor.state()
-        rospy.loginfo('Current vacuum value: {}'.format(gripper_value))
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Current vacuum value: {}'.format(gripper_value))
         if gripper_value > self.GRIP_MAX_VALUE:
             raise ValueError('Detected unsafe vacuum value of {}.'.format(gripper_value))
         return gripper_value > threshold
@@ -59,34 +60,37 @@ class SuctionPNPTask:
         self.gripper = Gripper(self.gripper_side)
         self.gripper.calibrate()
         self.vacuum_sensor = AnalogIO(self.gripper_side + '_vacuum_sensor_analog')
-        rospy.loginfo('Calibrated gripper. (type={})'.format(self.gripper.type()))
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Calibrated gripper. (type={})'.format(self.gripper.type()))
 
     def open_gripper(self, delay=1):
         """ Open the gripper with a given delay afterwards. """
         self.gripper.open()
         rospy.sleep(delay)
-        rospy.loginfo('Opened gripper.')
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Opened gripper.')
 
     def close_gripper(self, delay=1):
         """ Close a gripper with a given delay afterwards. """
         self.gripper.close()
         rospy.sleep(delay)
-        rospy.loginfo('Closed gripper.')
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Closed gripper.')
 
 
 class TetrisPNPTask(SuctionPNPTask):
     """
     A representation of the Tetris pick-and-place task.
     """
-    PIECE_THICKNESS = 0.007  # 7mm
-
-    def __init__(self, gripper_side='right', verbose=False, z_offset=0.005,
-                 z_max_steps=100, z_delta=0.001):
-        super(TetrisPNPTask, self).__init__(gripper_side, verbose)
-        self.z_offset, self.z_max_steps, self.z_delta = z_offset, z_max_steps, z_delta
-        self.table_height = np.nan
+    def __init__(self, gripper_side='right'):
+        super(TetrisPNPTask, self).__init__(gripper_side)
+        self.env = PNPEnvironment()
 
     def grasp(self, position, orientation=None):
+        z_offset = rospy.get_param('z_offset')
+        z_max_steps = rospy.get_param('z_max_steps')
+        z_delta = rospy.get_param('z_delta')
+
         current_pos = np.copy(position)
         current_pos[2] += self.z_offset
         steps = 0
@@ -99,10 +103,13 @@ class TetrisPNPTask(SuctionPNPTask):
                 self.open_gripper()
                 current_pos[2] -= self.z_delta
             else:
-                self.table_height = current_pos[2] - self.PIECE_THICKNESS
+                self.env.table_height = current_pos[2] - rospy.get_param('board_thickness')
                 self.planner.log_pose('Grasped object.', position, orientation)
                 return True
             steps += 1
         if self.verbose:
             self.planner.log_pose('Failed to grasp object.', position, orientation)
         return False
+
+    def pick(self, piece_name):
+        pass

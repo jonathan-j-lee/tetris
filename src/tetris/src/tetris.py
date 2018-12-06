@@ -39,8 +39,7 @@ def add_table_obstacle(task, margin=0.01):
 def main():
     rospy.init_node('tetris')
     solution = solve_puzzle_optimized()
-
-    task = TetrisPNPTask(verbose=rospy.get_param('verbose'))
+    task = TetrisPNPTask()
 
     while not rospy.is_shutdown():
         raw_input('Press enter.')

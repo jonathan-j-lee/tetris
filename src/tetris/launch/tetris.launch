@@ -9,6 +9,8 @@
   <param name="board_reverse_l_tiles" value="2" />
   <param name="board_t_tiles" value="2" />
   <param name="board_l_tiles" value="2" />
+  <param name="board_thickness" value="0.007" />
+  <param name="board_fixed" value="true" />
 
   <!-- Pick-and-place parameters -->
   <param name="gripper_side" value="right" />
