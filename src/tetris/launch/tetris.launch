@@ -34,6 +34,7 @@
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)
               $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)
               $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
+  <include file="$(find tetris)/launch/baxter_moveit_headless.launch" />
   <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
   <node name="tetris" pkg="tetris" respawn="false" />
 </launch>

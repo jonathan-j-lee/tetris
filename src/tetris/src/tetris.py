@@ -15,14 +15,13 @@ from solver import (TetrisSolver, SquareTile, LTile, ReverseLTile, TTile,
 
 
 def solve_puzzle():
-    rows = int(rospy.get_param('board_height'))
-    columns = int(rospy.get_param('board_width'))
+    rows, columns = rospy.get_param('board_height'), rospy.get_param('board_width')
     tile_params = ['board_sqtiles', 'board_linetiles', 'board_stiles',
                    'board_ztiles', 'board_revltiles', 'board_ttiles',
                    'board_ttiles']
     solver = TetrisSolver(rows, columns,
         [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile],
-        [int(rospy.get_param(param)) for param in tile_params])
+        [rospy.get_param(param) for param in tile_params])
     if not solver.solveProblem():
         raise ValueError('Failed to solve Tetris board.')
     return solver.solutionBoard
@@ -46,4 +45,7 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    try:
+        main()
+    except exc:
+        rospy.logerr(str(exc))
