@@ -1,22 +1,39 @@
 <launch>
-  <!-- Board state -->
-  <param name="board_width" default="8" />
-  <param name="board_height" default="6" />
-  <param name="board_sqtiles" default="2" />
-  <param name="board_linetiles" default="2" />
-  <param name="board_stiles" default="2" />
-  <param name="board_ztiles" default="2" />
-  <param name="board_revltiles" default="2" />
-  <param name="board_ttiles" default="2" />
-  <param name="board_ltiles" default="2" />
+  <!-- Board parameters -->
+  <param name="board_width" value="8" />
+  <param name="board_height" value="6" />
+  <param name="board_sqtiles" value="2" />
+  <param name="board_linetiles" value="2" />
+  <param name="board_stiles" value="2" />
+  <param name="board_ztiles" value="2" />
+  <param name="board_revltiles" value="2" />
+  <param name="board_ttiles" value="2" />
+  <param name="board_ltiles" value="2" />
 
-  <param name="gripper_side" default="right" />
-  <param name="z_offset" default="0.005" />
-  <param name="z_max_steps" default="100" />
-  <param name="z_delta" default="0.001" />
-  <param name="verbose" default="true" />
+  <!-- Pick-and-place parameters -->
+  <param name="gripper_side" value="right" />
+  <param name="z_offset" value="0.005" />
+  <param name="z_max_steps" value="100" />
+  <param name="z_delta" value="0.001" />
+  <param name="verbose" value="true" />
 
-  <!-- TODO: open the two ar_track_alvar nodes here. -->
+  <!-- Camera parameters -->
+  <arg name="camera_side" default="left" />
+  <arg name="marker_size" default="6" />
+  <arg name="max_new_marker_error" default="0.15" />
+  <arg name="max_track_error" default="0.3" />
+  <arg name="cam_image_topic" default="/cameras/$(arg camera_side)_hand_camera/image" />
+  <arg name="cam_info_topic" default="/cameras/$(arg camera_side)_hand_camera/camera_info" />
+  <arg name="output_frame" default="/$(arg camera_side)_hand" />
+  <arg name="max_frequency" default="10.0" />
+  <arg name="marker_resolution" default="5" />
+  <arg name="marker_margin" default="2" />
+
+  <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect"
+        respawn="true" output="screen"
+        args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)
+              $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)
+              $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
   <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
   <node name="tetris" pkg="tetris" respawn="false" />
 </launch>
