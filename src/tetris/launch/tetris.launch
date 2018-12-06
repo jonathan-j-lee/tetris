@@ -2,13 +2,13 @@
   <!-- Board parameters -->
   <param name="board_width" value="8" />
   <param name="board_height" value="6" />
-  <param name="board_sqtiles" value="2" />
-  <param name="board_linetiles" value="2" />
-  <param name="board_stiles" value="2" />
-  <param name="board_ztiles" value="2" />
-  <param name="board_revltiles" value="2" />
-  <param name="board_ttiles" value="2" />
-  <param name="board_ltiles" value="2" />
+  <param name="board_square_tiles" value="2" />
+  <param name="board_line_tiles" value="2" />
+  <param name="board_s_tiles" value="2" />
+  <param name="board_z_tiles" value="2" />
+  <param name="board_reverse_l_tiles" value="2" />
+  <param name="board_t_tiles" value="2" />
+  <param name="board_l_tiles" value="2" />
 
   <!-- Pick-and-place parameters -->
   <param name="gripper_side" value="right" />

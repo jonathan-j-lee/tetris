@@ -22,6 +22,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+__all__ = ['TileType', 'Tile', 'TILE_TYPES', 'EMPTY', 'FLAT', 'AR_TAG',
+           'ROTATION_0', 'ROTATION_90', 'ROTATION_180', 'ROTATION_270',
+           'rotate', 'solve_puzzle', 'optimize_solution',
+           'construct_solution_board', 'display_solution']
+
 from __future__ import division, generators, print_function, unicode_literals
 from collections import namedtuple
 import numpy as np
@@ -124,6 +129,7 @@ def place_tile(board, tile_pattern, row, column):
 
 
 def solve_puzzle_partial(board, tiles, solution, row_start=0, col_start=0):
+    """ Solve a partially filled board. """
     rows, columns = board.shape
     for i in range(row_start, rows):
         inner_start = col_start if i == row_start else 0
@@ -148,10 +154,16 @@ def solve_puzzle_partial(board, tiles, solution, row_start=0, col_start=0):
 
 
 def solve_puzzle(rows, columns, tiles):
+    """ Solve for an empty board, given a distribution of available tiles. """
     board, solution = np.full((rows, columns), EMPTY), []
     solved = solve_puzzle_partial(board, tiles, solution)
     if solved:
         return solution
+
+
+def optimize_solution(solution):
+    max_col = max(tile.column for tile in solution)
+    return list(sorted(solution, key=lambda tile: (max_col + 1)*tile.row + tile.column))
 
 
 def construct_solution_board(rows, columns, solution):

@@ -4,27 +4,32 @@
 tetris -- Solves a Tetris-like puzzle.
 """
 
+from __future__ import division, generators, print_function, unicode_literals
 import rospy
-
 from pnp import TetrisPNPTask
-from solver import (TetrisSolver, SquareTile, LTile, ReverseLTile, TTile,
-                    LineTile, ZTile, STile)
+from solver import TILE_TYPES, solve_puzzle, optimize_solution, display_solution
 
 
 # TODO: add face
 
 
-def solve_puzzle():
-    rows, columns = rospy.get_param('board_height'), rospy.get_param('board_width')
-    tile_params = ['board_sqtiles', 'board_linetiles', 'board_stiles',
-                   'board_ztiles', 'board_revltiles', 'board_ttiles',
-                   'board_ttiles']
-    solver = TetrisSolver(rows, columns,
-        [SquareTile, LineTile, STile, ZTile, ReverseLTile, TTile, LTile],
-        [rospy.get_param(param) for param in tile_params])
-    if not solver.solveProblem():
-        raise ValueError('Failed to solve Tetris board.')
-    return solver.solutionBoard
+def get_board_state():
+    """
+    Returns (int, int, dict): Rows, columns, and tile distribution.
+    """
+    tiles = {name: rospy.get_param('board_{}_tiles'.format(name)) for name in TILE_TYPES}
+    return rospy.get_param('board_height'), rospy.get_param('board_width'), tiles
+
+
+def solve_puzzle_optimized():
+    rows, columns, tiles = get_board_state()
+    solution = solve_puzzle(rows, columns, tiles)
+    assert solution is not None, 'Failed to solve puzzle.'
+    solution = optimize_solution(solution)
+    print('\n')
+    display_solution(rows, columns, solution, scale=4, offset=4)
+    print('\n')
+    return solution
 
 
 def add_table_obstacle(task, margin=0.01):
@@ -34,11 +39,12 @@ def add_table_obstacle(task, margin=0.01):
 def main():
     rospy.init_node('tetris')
     verbose = rospy.get_param('verbose').lower() == 'true'
-    task = TetrisPNPTask(verbose=verbose)
-    solution = solve_puzzle()
+    solution = solve_puzzle_optimized()
 
-    while not rospy.is_shutdown():
-        raw_input('Press enter.')
+    # task = TetrisPNPTask(verbose=verbose)
+
+    # while not rospy.is_shutdown():
+    #     raw_input('Press enter.')
 
     # solver = TetrisSolver(board_rows=6, board_cols=8,
     # tiles=[SquareTile, LTile, ReverseLTile, TTile, LineTile, ZTile, STile], num_tiles=[2, 2, 2, 1, 2, 2, 1])
