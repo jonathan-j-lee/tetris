@@ -15,6 +15,8 @@ import copy
 import operator
 from geometry_msgs.msg import PoseStamped
 
+from Pieces import *
+
 class TetrisSolver(object):
     '''
         Sets up a new tiling problem solver
@@ -211,7 +213,7 @@ class OurSolver(object):
     board_ar_marker_id = "ar_marker_8"
 
     def __init__(self, boardRows=6, boardCols=8, numTiles=[2, 2, 2, 1, 2, 2, 1]):
-        self.tiles = tileTypes
+        self.tiles = self.tileTypes
         self.problem = TetrisSolver(
             boardRows = boardRows,
             boardCols = boardCols,
@@ -308,7 +310,7 @@ class OurSolver(object):
         x, y, rot = self.getCoordinatesForARTagOfPiece(piece)
         z = 0
         rotation_quaternion = self.rotations[rot]
-        tileType = self.tileTypes[piece.tile_index]
+        tileType = self.getTileType(piece)
 
         piece_pose = PoseStamped()
         piece_pose.header.frame_id = self.board_ar_marker_id
@@ -321,168 +323,17 @@ class OurSolver(object):
         piece_pose.pose.orientation.w = rotation_quaternion[3]
         return piece_pose
 
-
-class Piece:
-    def __init__(self, tile_index, row, col, rotation):
-        self.tile_index = tile_index
-        self.row = row
-        self.col = col
-        self.rotation = rotation
-
-'''
-	The base class for any tiles used.
-'''
-class Tile:
-    tile = [[]]
-    uniqueRotations = 4 #By default, there are 4 unique rotational positions.
-
-    inchToM = .0254 #1" = 2.54cm
-    tileWidth = 2.5 * inchToM #.0635
-
-    '''
-        Rotate the tile 90 degrees CW
-    '''
-    @staticmethod
-    def rotateTile(tile):
-        tileRows = len(tile)
-        tileCols = len(tile[0])
-        rotTile = numpy.zeros((tileCols, tileRows), dtype=numpy.int) #After the rotation, the new matrix has number of rows and columns switched.
-
-        #Copy the values over
-        for i in range(tileRows):
-            for j in range(tileCols):
-                rotTile[j][tileRows - i - 1] = tile[i][j]
-        return rotTile
-
-"""
-    0: empty space
-    1: tile
-    2: tile with AR tag
-    centerOfMassOffset: offset from AR tag center
-"""
-
-'''
-    Square Tile
-    AR Tag 0
-'''
-class SquareTile(Tile):
-    tile = [
-        [1, 2],
-        [1, 1]
-    ]
-    uniqueRotations = 1
-
-    xOffset = numpy.sqrt(2) + (self.tileWidth / 2)
-    yOffset = - (numpy.sqrt(2) + (self.tileWidth / 2))
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    Left L Tile
-    AR Tag 6
-'''
-class LTile(Tile):
-    '''[2, 0, 0],
-        [1, 1, 1]'''
-    tile = [
-        [2, 1],
-        [0, 1],
-        [0, 1]
-    ]
-
-    xOffset = - (self.tileWidth)
-    yOffset = - ((self.tileWidth / 2) + 1.75)
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    Right L Tile
-    AR Tag 4
-'''
-class ReverseLTile(Tile):
-    tile = [
-        [2, 0, 0],
-        [1, 1, 1]
-    ]
-
-    xOffset = - ((self.tileWidth / 2) + 1.75)
-    yOffset = - (self.tileWidth)
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    T Tile
-    AR Tag 5
-'''
-class TTile(Tile):
-    tile = [
-        [1,1,1],
-        [0,2,0]
-    ]
-
-    xOffset = 0
-    yOffset = (self.tileWidth / 2) + 2 
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    Line Tile
-    AR Tag 1
-'''
-class LineTile(Tile):
-    #[2,1,1,1]
-    tile = [
-        [2],
-        [1],
-        [1],
-        [1]
-    ]
-    uniqueRotations = 2
-
-    xOffset = 0
-    yOffset = (self.tileWidth * 3 / 2)
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    Z Tile
-    AR Tag 3
-'''
-class ZTile(Tile):
-    '''[1,2,0],
-        [0,1,1]'''
-    tile = [
-        [0,1],
-        [2,1],
-        [1,0]
-    ]
-    uniqueRotations = 2
-
-    xOffset = -((self.tileWidth / 2) + 2) 
-    yOffset = 0
-    centerOfMassOffset = (xOffset, yOffset)
-
-'''
-    S Tile
-    AR Tag 2
-'''
-class STile(Tile):
-    '''[0,2,1],
-        [1,1,0]'''
-    tile = [
-        [1,0],
-        [1,2],
-        [0,1]
-    ]
-    uniqueRotations = 2
-
-    xOffset = (self.tileWidth / 2) + 2
-    yOffset = 0
-    centerOfMassOffset = (xOffset, yOffset)
+    def getTileType(self, piece):
+        return self.tileTypes[piece.tile_index]
 
 #Helper functions
 '''
     Matrices are a list of rows
 '''
 def printMatrix(mat):
-    print("===========================================================")
+    print("=============================================================================")
     for row in mat:
         for item in row:
             print("\t%s" %(item), end="")
         print("\n")
-    print("===========================================================")
+    print("=============================================================================")

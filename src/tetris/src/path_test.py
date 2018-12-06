@@ -20,16 +20,31 @@ from baxter_interface import Limb
 from baxter_interface import gripper as robot_gripper
 
 z_offset = -.030
+table_height = -0.195
 def main():
+    """
+    left hand:
+        [0.675, 0.007, 0.353]
+    """
     pap = PickAndPlace(z_offset=z_offset)  
-    addTableAtHeight(pap, -0.182)
-    
+    addTableAtHeight(pap, table_height) 
+
+    piece = pap.solver.getOrderForPlacement()[0]
+    print("Piece: ", pap.solver.tileTypes[piece.tile_index].__name__)
+    print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
+    print("\tCoordinates: {}".format(pap.solver.getCoordinatesForARTagOfPiece(piece)))
+    print(pap.move_to_piece_CoM(piece))
+    #pap.move_to_rotation(0.610, 0.032, table_height + 0.008, pap.ROT_0)
     #testMoveToRotation(pap, 0.763, -0.135, -0.170)
     #testRotateBy(pap)
     #resetGripper()
     #testGrasp(pap)
     #testRotations(pap)
-    testPickAndPlace(pap)
+    #testPickAndPlace(pap)
+
+def testMoveToARMarker(pap):
+    pap.table_height = table_height
+    pap.move_to_ar_marker("ar_marker_0")
 
 def addTableAtHeight(pap, z):
     pap.add_obstacle("table", 0.768, 0.032, z, 1.0, 1.0, 0.1)

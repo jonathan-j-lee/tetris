@@ -280,11 +280,13 @@ class PickAndPlace(object):
             numTiles = [2, 2, 2, 2, 1, 2, 1]
         )
         self.solver.solve()
+        """
         for piece in self.solver.getOrderForPlacement():
             print("Piece: ", self.solver.tileTypes[piece.tile_index].__name__)
             print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
             print("\tCoordinates: {}".format(self.solver.getCoordinatesForARTagOfPiece(piece)))
-            print("\tPose for piece: ", self.getBasePoseForPiece(piece))
+            #print("\tPose for piece: ", self.getBasePoseForPiece(piece))
+        """
 
     def testPoseForPiece(self):
         pass
@@ -298,6 +300,7 @@ class PickAndPlace(object):
         tfBuffer = tf2_ros.Buffer()
         tfListener = tf2_ros.TransformListener(tfBuffer)
 
+        print("getting transfrom from {} to base".format(ar_marker_id))
         while True:
             try:
                 trans = tfBuffer.lookup_transform("base", ar_marker_id, rospy.Time())
@@ -308,8 +311,54 @@ class PickAndPlace(object):
                 break
         return trans  
 
+    def move_to_ar_marker(self, ar_marker_id):
+        #self.solver.getTileType(piece).ar_marker_id
+        transform = self.getTransformFromARTag(ar_marker_id).transform
+        print(transform)
+        x, y, z = transform.translation.x, transform.translation.y, transform.translation.z
+        o_x, o_y, o_z, o_w = transform.rotation.x, transform.rotation.y, transform.rotation.z, transform.rotation.w
+        e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
+
+        #only care about the rotation about z axis
+        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2))
+        print(new_ox, new_oy, new_oz, new_ow)
+
+        if self.table_height == -1:
+            print("FORGOT TO SET TABLE HEIGHT")
+        self.move_to_pose(x, y, self.table_height + 0.008, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)
+
+    def move_to_piece_CoM(self, piece):
+        #Pose of the Center of Mass w.r.t. the piece's AR tag
+        tileType = self.solver.getTileType(piece)
+        print("TileType: {}, ar_marker_id: {}".format(tileType.__name__, tileType.ar_marker_id))
+        piece_CoM_pose_stamped = PoseStamped()
+        piece_CoM_pose_stamped.header.frame_id = tileType.ar_marker_id
+        piece_CoM_pose_stamped.pose.position.x = tileType.centerOfMassOffset[0]
+        piece_CoM_pose_stamped.pose.position.y = tileType.centerOfMassOffset[1]
+        piece_CoM_pose_stamped.pose.position.z = 0
+        piece_CoM_pose_stamped.pose.orientation.x = 0
+        piece_CoM_pose_stamped.pose.orientation.y = 0
+        piece_CoM_pose_stamped.pose.orientation.z = 0
+        piece_CoM_pose_stamped.pose.orientation.w = 1
+        
+        transform_from_ar_marker_to_base = self.getTransformFromARTag(tileType.ar_marker_id)
+        piece_CoM_pose_wrt_base = tf2_geometry_msgs.do_transform_pose(piece_CoM_pose_stamped, transform_from_ar_marker_to_base).pose
+        print(piece_CoM_pose_wrt_base)
+
+        x, y = piece_CoM_pose_wrt_base.position.x, piece_CoM_pose_wrt_base.position.y
+        o_x, o_y, o_z, o_w = piece_CoM_pose_wrt_base.orientation.x, piece_CoM_pose_wrt_base.orientation.y, piece_CoM_pose_wrt_base.orientation.z, piece_CoM_pose_wrt_base.orientation.w
+        e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
+
+        #only care about the rotation about z axis
+        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2))
+        print(new_ox, new_oy, new_oz, new_ow)
+
+        if self.table_height == -1:
+            print("FORGOT TO SET TABLE HEIGHT")
+        #self.move_to_pose(x, y, self.table_height + 0.008, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)
+
     def getTransformFromBoard(self):
-        return self.getTransformFromARTag("ar_marker_7")
+        return self.getTransformFromARTag(self.solver.board_ar_marker_id)
 
     def getBasePoseForPiece(self, piece):
         """
