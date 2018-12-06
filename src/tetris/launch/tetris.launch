@@ -36,5 +36,5 @@
               $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
   <include file="$(find tetris)/launch/baxter_moveit_headless.launch" />
   <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
-  <node name="tetris" pkg="tetris" respawn="false" />
+  <node name="tetris" pkg="tetris" type="tetris.py" output="screen" />
 </launch>

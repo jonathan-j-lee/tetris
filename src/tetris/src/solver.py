@@ -22,14 +22,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
+from __future__ import division, generators, print_function, unicode_literals
+from collections import namedtuple
+import numpy as np
+
 __all__ = ['TileType', 'Tile', 'TILE_TYPES', 'EMPTY', 'FLAT', 'AR_TAG',
            'ROTATION_0', 'ROTATION_90', 'ROTATION_180', 'ROTATION_270',
            'rotate', 'solve_puzzle', 'optimize_solution',
            'construct_solution_board', 'display_solution']
-
-from __future__ import division, generators, print_function, unicode_literals
-from collections import namedtuple
-import numpy as np
 
 
 EMPTY, FLAT, AR_TAG = 0, 1, 2

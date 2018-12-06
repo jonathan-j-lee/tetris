@@ -38,20 +38,16 @@ def add_table_obstacle(task, margin=0.01):
 
 def main():
     rospy.init_node('tetris')
-    verbose = rospy.get_param('verbose').lower() == 'true'
     solution = solve_puzzle_optimized()
 
-    # task = TetrisPNPTask(verbose=verbose)
+    task = TetrisPNPTask(verbose=rospy.get_param('verbose'))
 
-    # while not rospy.is_shutdown():
-    #     raw_input('Press enter.')
-
-    # solver = TetrisSolver(board_rows=6, board_cols=8,
-    # tiles=[SquareTile, LTile, ReverseLTile, TTile, LineTile, ZTile, STile], num_tiles=[2, 2, 2, 1, 2, 2, 1])
+    while not rospy.is_shutdown():
+        raw_input('Press enter.')
 
 
 if __name__ == '__main__':
     try:
         main()
-    except exc:
-        rospy.logerr(str(exc))
+    except Exception as exc:
+        rospy.logerr(type(exc).__name__ + ': ' + str(exc))

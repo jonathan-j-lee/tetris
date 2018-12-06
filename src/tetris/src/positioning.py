@@ -20,3 +20,6 @@ class ARTracker:
                 return self.buffer.lookup_transform(target_frame, source_frame, rospy.Time())
             except TransformException:
                 pass
+
+    def find_table(self):
+        pass
