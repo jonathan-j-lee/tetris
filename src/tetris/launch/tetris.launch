@@ -1,0 +1,22 @@
+<launch>
+  <!-- Board state -->
+  <param name="board_width" default="8" />
+  <param name="board_height" default="6" />
+  <param name="board_sqtiles" default="2" />
+  <param name="board_linetiles" default="2" />
+  <param name="board_stiles" default="2" />
+  <param name="board_ztiles" default="2" />
+  <param name="board_revltiles" default="2" />
+  <param name="board_ttiles" default="2" />
+  <param name="board_ltiles" default="2" />
+
+  <param name="gripper_side" default="right" />
+  <param name="z_offset" default="0.005" />
+  <param name="z_max_steps" default="100" />
+  <param name="z_delta" default="0.001" />
+  <param name="verbose" default="true" />
+
+  <!-- TODO: open the two ar_track_alvar nodes here. -->
+  <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
+  <node name="tetris" pkg="tetris" respawn="false" />
+</launch>
