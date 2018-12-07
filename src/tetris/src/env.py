@@ -2,7 +2,7 @@
 env -- Module managing the state of the environment.
 """
 
-from __future__ import division, generators, print_function, unicode_literals
+from __future__ import division, generators, print_function
 import numpy as np
 import rospy
 from tf2_ros import Buffer, TransformListener, TransformException
@@ -78,7 +78,7 @@ class PNPEnvironment(Environment):
 
     def __init__(self, queue_size=5, table_height=np.nan, frame_id='base',
                  tool_frame_id='right_gripper'):
-        super(PNPEnvironment, self).__init__(queue_size=queue_size)
+        Environment.__init__(self, queue_size=queue_size)
         self.table_height = table_height
         self.frame_id, self.tool_frame_id = frame_id, tool_frame_id
 

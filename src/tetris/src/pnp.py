@@ -2,7 +2,7 @@
 pnp -- Module for performing pick-and-place tasks.
 """
 
-from __future__ import division, generators, print_function, unicode_literals
+from __future__ import division, generators, print_function
 import numpy as np
 from baxter_interface import Gripper, AnalogIO
 import rospy
@@ -83,7 +83,7 @@ class TetrisPNPTask(SuctionPNPTask):
     A representation of the Tetris pick-and-place task.
     """
     def __init__(self, frame_id='base', gripper_side='right'):
-        super(TetrisPNPTask, self).__init__(frame_id, gripper_side)
+        SuctionPNPTask.__init__(self, frame_id, gripper_side)
         self.env = PNPEnvironment(frame_id=frame_id)
 
     def grasp(self, position, orientation=None):

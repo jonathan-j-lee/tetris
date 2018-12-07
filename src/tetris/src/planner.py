@@ -2,12 +2,16 @@
 planner -- Module for performing path planning.
 """
 
-from __future__ import division, generators, print_function, unicode_literals
-from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
+from __future__ import division, generators, print_function
+import sys
+from moveit_commander import (RobotCommander, PlanningSceneInterface, MoveGroupCommander,
+                              roscpp_initialize)
 from moveit_msgs.msg import OrientationConstraint, Constraints, CollisionObject
 import rospy
 from shape_msgs.msg import SolidPrimitive
 from env import create_pose, log_pose
+
+roscpp_initialize(sys.argv)
 
 
 class PathPlanner:

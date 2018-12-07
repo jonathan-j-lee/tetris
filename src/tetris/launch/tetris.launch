@@ -1,4 +1,6 @@
 <launch>
+  <arg name="startall" default="true" />
+
   <!-- Board parameters -->
   <param name="board_width" value="8" />
   <param name="board_height" value="6" />
@@ -39,12 +41,14 @@
 
   <param name="tile_size" value="$(arg marker_size)" />
 
-  <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect"
-        respawn="true" output="screen"
-        args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)
-              $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)
-              $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
-  <include file="$(find tetris)/launch/baxter_moveit_headless.launch" />
-  <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
+  <group if="$(arg startall)">
+    <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect"
+          respawn="true" output="screen"
+          args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)
+                $(arg cam_image_topic) $(arg cam_info_topic) $(arg output_frame)
+                $(arg max_frequency) $(arg marker_resolution) $(arg marker_margin)" />
+    <include file="$(find tetris)/launch/baxter_moveit_headless.launch" />
+    <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
+  </group>
   <node name="tetris" pkg="tetris" type="tetris.py" output="screen" />
 </launch>

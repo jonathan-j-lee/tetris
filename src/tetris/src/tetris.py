@@ -4,7 +4,7 @@
 tetris -- Solves a Tetris-like puzzle.
 """
 
-from __future__ import division, generators, print_function, unicode_literals
+from __future__ import division, generators, print_function
 import rospy
 from pnp import TetrisPNPTask
 from solver import TILE_TYPES, solve_puzzle, optimize_solution, display_solution
@@ -33,7 +33,7 @@ def solve_puzzle_optimized():
 
 
 # def add_table_obstacle(task, margin=0.01):
-    # task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
+#     task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
 
 
 def main():

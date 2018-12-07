@@ -22,9 +22,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from __future__ import division, generators, print_function, unicode_literals
+from __future__ import division, generators, print_function
 from collections import namedtuple
 import numpy as np
+import rospy
 
 __all__ = ['TileType', 'Tile', 'TILE_TYPES', 'EMPTY', 'FLAT', 'AR_TAG',
            'rotate', 'solve_puzzle', 'optimize_solution',
@@ -37,8 +38,8 @@ TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
 
 TILE_SIZE = rospy.get_param('tile_size')/100
-SQUARE_TILE = TileType(0, 'square', 1, -(0.5 + 1/2**0.5)*TILE_SIZE,
-                       -(0.5 + 1/2**0.5)*TILE_SIZE, [
+SQUARE_TILE = TileType(0, 'square', 1, -0.5*TILE_SIZE + 0.01/2**0.5,
+                       -0.5*TILE_SIZE + 0.01/2**0.5, [
     [FLAT, AR_TAG],
     [FLAT, FLAT],
 ])
@@ -53,7 +54,7 @@ S_TILE = TileType(2, 's', 2, -5/6*TILE_SIZE, 0, [
     [FLAT, AR_TAG],
     [EMPTY, FLAT],
 ])
-Z_TILE = TileType(3, 'z', 2, -5/6*TILE_SIZE, 0, [
+Z_TILE = TileType(3, 'z', 2, 5/6*TILE_SIZE, 0, [
     [EMPTY, FLAT],
     [AR_TAG, FLAT],
     [FLAT, EMPTY],
@@ -198,7 +199,7 @@ def display_solution(rows, columns, solution, scale=1, offset=2):
             code = '{}'.format(int(fmt_id/2 + 31))
             if fmt_id%2:
                 code += ';1'
-            print('\x1b[{}m'.format(code) + '\u2588'*2 + '\x1b[0m', end='')
+            print(u'\x1b[{}m'.format(code) + u'\u2588'*2 + u'\x1b[0m', end='')
         print()
 
 
