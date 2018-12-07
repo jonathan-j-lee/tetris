@@ -31,6 +31,8 @@
   <arg name="marker_resolution" default="5" />
   <arg name="marker_margin" default="2" />
 
+  <param name="tile_size" value="$(arg marker_size)" />
+
   <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect"
         respawn="true" output="screen"
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)

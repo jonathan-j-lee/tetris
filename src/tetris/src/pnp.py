@@ -24,9 +24,9 @@ class SuctionPNPTask:
     """
     GRIP_MAX_VALUE = 175
 
-    def __init__(self, gripper_side='right'):
+    def __init__(self, frame_id='base', gripper_side='right'):
         self.gripper_side = gripper_side
-        self.planner = PathPlanner('base', gripper_side + '_arm')
+        self.planner = PathPlanner(frame_id, gripper_side + '_arm')
         self.calibrate_gripper()
 
     def is_grasping(self, threshold=50):
@@ -82,26 +82,25 @@ class TetrisPNPTask(SuctionPNPTask):
     """
     A representation of the Tetris pick-and-place task.
     """
-    def __init__(self, gripper_side='right'):
-        super(TetrisPNPTask, self).__init__(gripper_side)
-        self.env = PNPEnvironment()
+    def __init__(self, frame_id='base', gripper_side='right'):
+        super(TetrisPNPTask, self).__init__(frame_id, gripper_side)
+        self.env = PNPEnvironment(frame_id=frame_id)
 
     def grasp(self, position, orientation=None):
-        z_offset = rospy.get_param('z_offset')
+        z_offset, z_delta = rospy.get_param('z_offset'), rospy.get_param('z_delta')
         z_max_steps = rospy.get_param('z_max_steps')
-        z_delta = rospy.get_param('z_delta')
 
         current_pos = np.copy(position)
-        current_pos[2] += self.z_offset
+        current_pos[2] += z_offset
         steps = 0
-        while not rospy.is_shutdown() and steps < self.z_max_steps:
+        while not rospy.is_shutdown() and steps < z_max_steps:
             success = self.planner.move_to_pose(current_pos, orientation)
             if not success:
                 break
             self.close_gripper()
             if not self.is_grasping():
                 self.open_gripper()
-                current_pos[2] -= self.z_delta
+                current_pos[2] -= z_delta
             else:
                 self.env.table_height = current_pos[2] - rospy.get_param('board_thickness')
                 self.planner.log_pose('Grasped object.', position, orientation)
@@ -111,5 +110,9 @@ class TetrisPNPTask(SuctionPNPTask):
             self.planner.log_pose('Failed to grasp object.', position, orientation)
         return False
 
-    def pick(self, piece_name):
-        pass
+    def pick(self, tile_name):
+        try:
+            position, orientation = self.env.find_tile_center(tile_name)
+        except ValueError:
+            return False
+        return self.grasp(position, orientation)

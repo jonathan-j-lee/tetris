@@ -39,35 +39,37 @@ TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
                                    'y_offset', 'pattern'])
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
 
-SQUARE_TILE = TileType(0, 'square', 1, -3.7071, -3.7071, [
+TILE_SIZE = rospy.get_param('tile_size')/100
+SQUARE_TILE = TileType(0, 'square', 1, -(0.5 + 1/2**0.5)*TILE_SIZE,
+                       -(0.5 + 1/2**0.5)*TILE_SIZE, [
     [FLAT, AR_TAG],
     [FLAT, FLAT],
 ])
-LINE_TILE = TileType(1, 'line', 2, 0, -9, [
+LINE_TILE = TileType(1, 'line', 2, 0, -1.5*TILE_SIZE, [
     [AR_TAG],
     [FLAT],
     [FLAT],
     [FLAT],
 ])
-S_TILE = TileType(2, 's', 2, -5, 0, [
+S_TILE = TileType(2, 's', 2, -5/6*TILE_SIZE, 0, [
     [FLAT, EMPTY],
     [FLAT, AR_TAG],
     [EMPTY, FLAT],
 ])
-Z_TILE = TileType(3, 'z', 2, 5, 0, [
+Z_TILE = TileType(3, 'z', 2, -5/6*TILE_SIZE, 0, [
     [EMPTY, FLAT],
     [AR_TAG, FLAT],
     [FLAT, EMPTY],
 ])
-REVERSE_L_TILE = TileType(4, 'reverse_l', 4, 4.75, -6, [
+REVERSE_L_TILE = TileType(4, 'reverse_l', 4, 4.75/6*TILE_SIZE, -TILE_SIZE, [
     [AR_TAG, EMPTY, EMPTY],
     [FLAT, FLAT, FLAT],
 ])
-T_TILE = TileType(5, 't', 4, 0, 5, [
+T_TILE = TileType(5, 't', 4, 0, 5/6*TILE_SIZE, [
     [FLAT, FLAT, FLAT],
     [EMPTY, AR_TAG, EMPTY],
 ])
-L_TILE = TileType(6, 'l', 4, 6, -4.75, [
+L_TILE = TileType(6, 'l', 4, TILE_SIZE, -4.75/6*TILE_SIZE, [
     [AR_TAG, FLAT],
     [EMPTY, FLAT],
     [EMPTY, FLAT],

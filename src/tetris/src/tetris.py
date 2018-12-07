@@ -32,17 +32,22 @@ def solve_puzzle_optimized():
     return solution
 
 
-def add_table_obstacle(task, margin=0.01):
-    task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
+# def add_table_obstacle(task, margin=0.01):
+    # task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
 
 
 def main():
     rospy.init_node('tetris')
-    solution = solve_puzzle_optimized()
+    solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
 
-    while not rospy.is_shutdown():
-        raw_input('Press enter.')
+    while not rospy.is_shutdown() and i < len(solution):
+        tile = solution[i]
+        prompt = 'Please provide a {} piece. Press enter when done.'
+        raw_input(prompt.format(tile.tile_name.upper()))
+
+        task.pick(tile.tile_name)
+        task.place(tile.row, tile.column, tile.rotations)
 
 
 if __name__ == '__main__':
