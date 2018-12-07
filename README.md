@@ -38,6 +38,11 @@ MoveIt is now ready to compute and execute trajectories on the robot
 - `rosrun tf tf_echo base reference/right_gripper`
 - `rosrun baxter_tools tuck_arms.py -u`	
 
+### Cameras
+- `head_camera', 'left_hand_camera', 'right_hand_camera'
+- `rosrun baxter_tools camera_control.py -c head_camera`
+- `rosrun baxter_tools camera_control.py -o left_hand_camera -r 1280x800`
+
 ## TODO
 1. Detect what pieces there are ?
 2. Input the pieces into the solver, get solution !
