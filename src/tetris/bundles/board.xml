@@ -8,12 +8,12 @@
     <corner x="3" y="-3" z="0" />
   </marker>
 
-  <!-- Top right corner -->
-  <marker index="7" status="1">
-    <corner x="51" y="-3" z="0" />
-    <corner x="51" y="3" z="0" />
-    <corner x="57" y="3" z="0" />
-    <corner x="57" y="-3" z="0" />
+  <!-- Bottom left corner -->
+  <marker index="9" status="1">
+    <corner x="-3" y="-45" z="0" />
+    <corner x="-3" y="-39" z="0" />
+    <corner x="3" y="-39" z="0" />
+    <corner x="3" y="-45" z="0" />
   </marker>
 
   <!-- Bottom right corner -->
@@ -24,11 +24,11 @@
     <corner x="57" y="-45" z="0" />
   </marker>
 
-  <!-- Bottom left corner -->
-  <marker index="9" status="1">
-    <corner x="-3" y="-45" z="0" />
-    <corner x="-3" y="-39" z="0" />
-    <corner x="3" y="-39" z="0" />
-    <corner x="3" y="-45" z="0" />
+  <!-- Top right corner -->
+  <marker index="7" status="1">
+    <corner x="51" y="-3" z="0" />
+    <corner x="51" y="3" z="0" />
+    <corner x="57" y="3" z="0" />
+    <corner x="57" y="-3" z="0" />
   </marker>
 </multimarker>
