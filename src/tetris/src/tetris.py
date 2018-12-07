@@ -38,18 +38,21 @@ def solve_puzzle_optimized():
 
 def main():
     rospy.init_node('tetris')
+    # Wait for other nodes to come online.
+    rospy.sleep(rospy.get_param('init_delay'))
     solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
 
     while not rospy.is_shutdown() and i < len(solution):
         tile = solution[i]
-        prompt = 'Please provide a {} piece. Press enter when done.'
+        prompt = 'Please provide a {} tile. Press enter when done.'
         raw_input(prompt.format(tile.tile_name.upper()))
 
         try:
             task.pick(tile.tile_name)
             task.place(tile)
         except Exception as exc:
+            # Retry the current piece in the event of an error
             rospy.logerr(type(exc).__name__ + ': ' + str(exc))
             continue
         else:
