@@ -5,12 +5,20 @@ tetris -- Solves a Tetris-like puzzle.
 """
 
 from __future__ import division, generators, print_function
+import cv2
+import cv_bridge
 import rospy
+import rospkg
+from sensor_msgs.msg import Image
 from pnp import TetrisPNPTask
 from solver import TILE_TYPES, solve_puzzle, optimize_solution, display_solution
 
 
-# TODO: add face
+def send_image(img_pub, path, delay=1):
+    img = cv2.imread(path)
+    msg = cv_bridge.CvBridge().cv2_to_imgmsg(img, encoding='bgr8')
+    img_pub.publish(msg)
+    rospy.sleep(delay)
 
 
 def get_board_state():
@@ -40,15 +48,19 @@ def main():
     rospy.init_node('tetris')
     # Wait for other nodes to come online.
     rospy.sleep(rospy.get_param('init_delay'))
+    rospack = rospkg.RosPack()
     solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
+    img_pub = rospy.Publisher('/robot/xdisplay', Image, latch=True)
 
     while not rospy.is_shutdown() and i < len(solution):
         tile = solution[i]
-        prompt = 'Please provide a {} tile. Press enter when done.'
-        raw_input(prompt.format(tile.tile_name.upper()))
+        prompt = '(Please provide a {} tile. Press enter when done.) '
 
         try:
+            path = rospack.get_path('tetris/data/{}.png'.format(tile.tile_name))
+            send_image(img_pub, path)
+            raw_input(prompt.format(tile.tile_name.upper()))
             task.pick(tile.tile_name)
             task.place(tile)
         except Exception as exc:

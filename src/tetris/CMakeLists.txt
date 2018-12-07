@@ -13,6 +13,7 @@ find_package(catkin REQUIRED COMPONENTS
   intera_interface
   moveit_msgs
   roscpp
+  rospkg
   rospy
   sensor_msgs
   std_msgs
@@ -111,7 +112,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES tetris
-#  CATKIN_DEPENDS baxter_tools geometry_msgs intera_interface moveit_msgs roscpp rospy sensor_msgs std_msgs tf2_ros
+#  CATKIN_DEPENDS baxter_tools geometry_msgs intera_interface moveit_msgs roscpp rospkg rospy sensor_msgs std_msgs tf2_ros
 #  DEPENDS system_lib
 )
 
