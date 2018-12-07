@@ -25,7 +25,6 @@ unset your_hostname
 # your_hostname that this must be resolvable to Baxter.
 #your_ip="192.168.XXX.XXX"
 #your_hostname="$HOSTNAME" #"my_computer.local"
-your_hostname=c111-9.eecs.berkeley.edu
 
 # Specify ROS distribution (e.g. indigo, hydro, etc.)
 ros_version="indigo"

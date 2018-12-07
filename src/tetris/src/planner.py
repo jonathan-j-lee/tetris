@@ -38,13 +38,15 @@ class PathPlanner:
     def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
         if not workspace:
             workspace = [-2, -2, -2, 2, 2, 2]
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Move group: {}'.format(group_name))
         self.frame_id, self.workspace = frame_id, workspace
         self.time_limit, self.group_name = time_limit, group_name
         self.robot = RobotCommander()
         self.scene = PlanningSceneInterface()
-        self.group = MoveGroupCommander(group_name)
         self.scene_publisher = rospy.Publisher(self.PLANNING_SCENE_TOPIC,
                                                CollisionObject, queue_size=10)
+        self.group = MoveGroupCommander(group_name)
 
         rospy.on_shutdown(self.shutdown)
         self.group.set_planning_time(time_limit)

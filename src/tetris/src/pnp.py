@@ -27,7 +27,7 @@ class SuctionPNPTask:
         self.planner = PathPlanner(frame_id, gripper_side + '_arm')
         self.calibrate_gripper()
         if rospy.get_param('verbose'):
-            rospy.info('Initialized PNP task.')
+            rospy.loginfo('Initialized PNP task.')
 
     def is_grasping(self, threshold=50):
         """
