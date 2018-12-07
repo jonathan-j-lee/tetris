@@ -5,6 +5,8 @@ tetris -- Solves a Tetris-like puzzle.
 """
 
 from __future__ import division, generators, print_function
+import os
+from baxter_interface import Limb
 import cv2
 import cv_bridge
 import rospy
@@ -12,6 +14,16 @@ import rospkg
 from sensor_msgs.msg import Image
 from pnp import TetrisPNPTask
 from solver import TILE_TYPES, solve_puzzle, optimize_solution, display_solution
+
+INIT_LEFT_ARM_JOINTS = {
+    'left_e0': -1.3959,
+    'left_e1': 1.4067,
+    'left_s0': -0.2159,
+    'left_s1': -0.4092,
+    'left_w0': -2.0356,
+    'left_w1': -1.5336,
+    'left_w2': 2.3155,
+}
 
 
 def send_image(img_pub, path, delay=1):
@@ -40,6 +52,17 @@ def solve_puzzle_optimized():
     return solution
 
 
+def set_joint_angles(limb, angles, tolerance=0.05, max_steps=1000, period=0.01):
+    joint_names = limb.joint_names()
+    all_angles = {name: (angles[name] if name in angles else limb.joint_angle(name))
+                  for name in joint_names}
+    step = 0
+    while step < max_steps and not all(abs(angle - limb.joint_angle(name)) < tolerance for name, angle in all_angles.items()):
+        limb.set_joint_positions(all_angles)
+        rospy.sleep(period)
+        step += 1
+
+
 # def add_table_obstacle(task, margin=0.01):
 #     task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
 
@@ -48,6 +71,7 @@ def main():
     rospy.init_node('tetris')
     # Wait for other nodes to come online.
     rospy.sleep(rospy.get_param('init_delay'))
+    set_joint_angles(Limb('left'), INIT_LEFT_ARM_JOINTS)
     rospack = rospkg.RosPack()
     solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
@@ -58,7 +82,8 @@ def main():
         prompt = '(Please provide a {} tile. Press enter when done.) '
 
         try:
-            path = rospack.get_path('tetris/data/{}.png'.format(tile.tile_name))
+            path = os.path.join(rospack.get_path('tetris'),
+                                'data/{}.png'.format(tile.tile_name))
             send_image(img_pub, path)
             raw_input(prompt.format(tile.tile_name.upper()))
             task.pick(tile.tile_name)
