@@ -8,7 +8,7 @@ import rospy
 from tf2_ros import Buffer, TransformListener, TransformException
 from tf2_geometry_msgs import do_transform_pose
 from geometry_msgs.msg import PoseStamped
-from solver import TILE_TYPES
+from solver import TILE_TYPES, AR_TAG
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 
@@ -99,5 +99,36 @@ class PNPEnvironment(Environment):
         offset = add_transform_offset(trans, [tile_type.x_offset, tile_type.y_offset, 0])
         return convert_pose(offset)
 
-    # def find_table(self):
-    #     self.get_transform()
+    def find_table(self):
+        # TODO
+        return self.get_rel_transform(marker_frame(rospy.get_param('board_top_left_marker')))
+
+    def find_slot_transform(self, tile):
+        tile_size = rospy.get_param('tile_size')
+        top_left, tile_type = self.find_table(), TILE_TYPES[tile.tile_name]
+        pattern = rotate(tile_type.pattern, tile.rotations)
+        for row in range(pattern.shape[0]):
+            for column in range(pattern.shape[1]):
+                if pattern[row, column] == AR_TAG:
+                    break
+        else:
+            raise ValueError('AR tag not found in pattern.')
+
+        row, column = row + tile.row, column + tile.column
+        x_offset = column*tile_size
+        y_offset = row*tile_size
+        # TODO: refactor
+        if rotations == 0:
+            x_offset += tile_type.x_offset
+            y_offset += tile_type.y_offset
+        elif rotations == 1:
+            x_offset += tile_type.y_offset
+            y_offset -= tile_type.x_offset
+        elif rotations == 2:
+            x_offset -= tile_type.x_offset
+            y_offset -= tile_type.y_offset
+        else:
+            x_offset -= tile_type.y_offset
+            y_offset += tile_type.x_offset
+        offset = add_transform_offset(top_left, np.array([x_offset, y_offset, 0]))
+        return convert_pose(offset)

@@ -46,12 +46,15 @@ def main():
         prompt = 'Please provide a {} piece. Press enter when done.'
         raw_input(prompt.format(tile.tile_name.upper()))
 
-        task.pick(tile.tile_name)
-        task.place(tile.row, tile.column, tile.rotations)
+        try:
+            task.pick(tile.tile_name)
+            task.place(tile)
+        except Exception as exc:
+            rospy.logerr(type(exc).__name__ + ': ' + str(exc))
+            continue
+        else:
+            i += 1
 
 
 if __name__ == '__main__':
-    try:
-        main()
-    except Exception as exc:
-        rospy.logerr(type(exc).__name__ + ': ' + str(exc))
+    main()

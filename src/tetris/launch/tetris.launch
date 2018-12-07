@@ -11,6 +11,10 @@
   <param name="board_l_tiles" value="2" />
   <param name="board_thickness" value="0.007" />
   <param name="board_fixed" value="true" />
+  <param name="board_top_left_marker" value="8" />
+  <param name="board_top_right_marker" value="7" />
+  <param name="board_bottom_left_marker" value="9" />
+  <param name="board_bottom_right_marker" value="10" />
 
   <!-- Pick-and-place parameters -->
   <param name="gripper_side" value="right" />

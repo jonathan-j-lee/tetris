@@ -27,14 +27,11 @@ from collections import namedtuple
 import numpy as np
 
 __all__ = ['TileType', 'Tile', 'TILE_TYPES', 'EMPTY', 'FLAT', 'AR_TAG',
-           'ROTATION_0', 'ROTATION_90', 'ROTATION_180', 'ROTATION_270',
            'rotate', 'solve_puzzle', 'optimize_solution',
            'construct_solution_board', 'display_solution']
 
 
 EMPTY, FLAT, AR_TAG = 0, 1, 2
-ROTATION_0, ROTATION_90, ROTATION_180, ROTATION_270 = 0, 1, 2, 3
-
 TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
                                    'y_offset', 'pattern'])
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
