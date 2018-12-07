@@ -94,10 +94,11 @@ class TetrisPNPTask(SuctionPNPTask):
         current_pos[2] += z_offset
         steps = 0
         while not rospy.is_shutdown() and steps < z_max_steps:
-            try:
-                self.planner.move_to_pose(current_pos, orientation)
-            except Exception:
-                break
+            # try:
+            self.planner.move_to_pose(current_pos, orientation)
+            # except Exception as exc:
+            #     rospy.logerr(exc)
+            #     break
             self.close_gripper()
             if not self.is_grasping():
                 self.open_gripper()
@@ -114,6 +115,7 @@ class TetrisPNPTask(SuctionPNPTask):
     def pick(self, tile_name):
         assert not self.is_grasping()
         center_pos, center_orien = self.env.find_tile_center(tile_name)
+        rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
         return self.grasp(center_pos, center_orien)
 
     def elevate(self, z_offset):

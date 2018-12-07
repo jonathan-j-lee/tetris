@@ -15,14 +15,17 @@ from sensor_msgs.msg import Image
 from pnp import TetrisPNPTask
 from solver import TILE_TYPES, solve_puzzle, optimize_solution, display_solution
 
+# JOINTS = [-1.5834516682947184, 1.6256361399615673, -0.11543205428837738, 0.5763932810479442, -0.9660244011708393, -1.571179821991635, 2.073558530024108]
+# JOINTS = [-1.6551652701283615, 1.5240099127641586, 0.0, 0.14611167004608566, -1.3959225169757266, -1.5707963267946636, 2.3109420569493757]
+JOINTS = [-1.4304370847031482, 1.4814419459003383, -0.32098547986502285, -0.7765777738669907, -2.3749857548435918, -1.5715633171886063, 2.1517915502062643]
 INIT_LEFT_ARM_JOINTS = {
-    'left_e0': -1.3959,
-    'left_e1': 1.4067,
-    'left_s0': -0.2159,
-    'left_s1': -0.4092,
-    'left_w0': -2.0356,
-    'left_w1': -1.5336,
-    'left_w2': 2.3155,
+    'left_e0': JOINTS[0],
+    'left_e1': JOINTS[1],
+    'left_s0': JOINTS[2],
+    'left_s1': JOINTS[3],
+    'left_w0': JOINTS[4],
+    'left_w1': JOINTS[5],
+    'left_w2': JOINTS[6],
 }
 
 
@@ -81,19 +84,20 @@ def main():
         tile = solution[i]
         prompt = '(Please provide a {} tile. Press enter when done.) '
 
-        try:
-            path = os.path.join(rospack.get_path('tetris'),
+        # try:
+        path = os.path.join(rospack.get_path('tetris'),
                                 'data/{}.png'.format(tile.tile_name))
-            send_image(img_pub, path)
-            raw_input(prompt.format(tile.tile_name.upper()))
-            task.pick(tile.tile_name)
-            task.place(tile)
-        except Exception as exc:
-            # Retry the current piece in the event of an error
-            rospy.logerr(type(exc).__name__ + ': ' + str(exc))
-            continue
-        else:
-            i += 1
+        send_image(img_pub, path)
+        raw_input(prompt.format(tile.tile_name.upper()))
+        task.pick(tile.tile_name)
+        task.place(tile)
+        # except Exception as exc:
+        #     # Retry the current piece in the event of an error
+        #     rospy.logerr(type(exc).__name__ + ': ' + str(exc))
+        #     continue
+        #     raise exc
+        # else:
+        i += 1
 
 
 if __name__ == '__main__':

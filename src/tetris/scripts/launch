@@ -22,13 +22,15 @@ tmux split-window -v "./baxter.sh $1"
 tmux select-layout tiled
 
 tmux select-pane -t 0
-tmux send-keys "roslaunch tetris tetris.launch startall:=false" C-m
+tmux send-keys "roslaunch tetris tetris.launch startplanning:=false" C-m
 tmux select-pane -t 1
 tmux send-keys "rosrun baxter_interface joint_trajectory_action_server.py" C-m
 tmux select-pane -t 2
-tmux send-keys "roslaunch tetris baxter_state_publisher.launch" C-m
-tmux select-pane -t 3
 tmux send-keys "roslaunch tetris baxter_moveit_headless.launch" C-m
+tmux select-pane -t 3
+tmux send-keys "roslaunch tetris baxter_state_publisher.launch" C-m
 tmux select-pane -t 4
+tmux send-keys "rosrun tf tf_echo base right_hand"
+tmux select-pane -t 5
 
 tmux -2 attach-session -t "$session"

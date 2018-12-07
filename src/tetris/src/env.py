@@ -18,8 +18,8 @@ DEFAULT_ORIENTATION = np.array([0, 0, 0, 1])
 
 def create_pose(frame_id, position=None, orientation=None):
     """ Convert a pose as arrays into a ROS-compatible timestamped pose data type. """
-    position = position or DEFAULT_POSITION
-    orientation = orientation or DEFAULT_ORIENTATION
+    position = position if position is not None else DEFAULT_POSITION
+    orientation = orientation if orientation is not None else DEFAULT_ORIENTATION
     target = PoseStamped()
     target.header.frame_id = frame_id
     target_pos, target_orien = target.pose.position, target.pose.orientation
@@ -29,14 +29,14 @@ def create_pose(frame_id, position=None, orientation=None):
 
 
 def convert_pose(pose):
-    position, orientation = pose.position, pose.orientation
+    position, orientation = pose.pose.position, pose.pose.orientation
     return (np.array([position.x, position.y, position.z]),
             np.array([orientation.x, orientation.y, orientation.z, orientation.w]))
 
 
 def log_pose(msg, position, orientation=None):
     """ Logs the given pose. """
-    if not orientation:
+    if orientation is not None:
         rospy.loginfo('{} (x={}, y={}, z={})'.format(msg, *position))
     else:
         template = '{} (x={}, y={}, z={}, o_x={}, o_y={}, o_z={}, o_w={})'
@@ -44,7 +44,7 @@ def log_pose(msg, position, orientation=None):
 
 
 def marker_frame(marker_id):
-    return 'ar_track_{}'.format(marker_id)
+    return 'ar_marker_{}'.format(marker_id)
 
 
 def add_transform_offset(trans, translation):
@@ -55,18 +55,19 @@ def add_transform_offset(trans, translation):
 class Environment:
     def __init__(self, queue_size=5):
         self.buffer = Buffer()
-        self.listener = TransformListener(self.buffer, queue_size=queue_size)
+        self.listener = TransformListener(self.buffer)
 
     def get_transform(self, target_frame, source_frame, timeout=5):
         start = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time() - start < timeout:
             try:
-                return self.buffer.lookup_transform(target_frame, source_frame,
+                return self.buffer.lookup_transform(source_frame, target_frame, # target_frame, source_frame,
                                                     rospy.Time())
             except TransformException:
-                if rospy.get_param('verbose'):
-                    template = 'Failed to find transform: "{}" -> "{}"'
-                    rospy.logwarn(template.format(source_frame, target_frame))
+                pass
+        if rospy.get_param('verbose'):
+            template = 'Failed to find transform: "{}" -> "{}"'
+            rospy.logwarn(template.format(source_frame, target_frame))
 
 
 class PNPEnvironment(Environment):
@@ -92,12 +93,13 @@ class PNPEnvironment(Environment):
 
     def find_tile_center(self, tile_name):
         tile_type = TILE_TYPES[tile_name]
-        trans = self.get_rel_transform(marker_frame(tile_type.marker_id))
+        trans = self.get_transform()  #FIXME: self.get_rel_transform(marker_frame(tile_type.marker_id))
         if not trans:
             raise ValueError('Unable to obtain transform.')
-        rot = trans.translation.rotation
+        rot = trans.transform.rotation
         _, _, e_z = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
-        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler([0, 0, e_z])
+        rospy.loginfo(str(trans.transform.translation))
+        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, 0, e_z)
         offset = add_transform_offset(trans, [tile_type.x_offset, tile_type.y_offset, 0])
         return convert_pose(offset)
 

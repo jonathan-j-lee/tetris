@@ -36,7 +36,7 @@ class PathPlanner:
     PLANNING_SCENE_TOPIC = '/collision_object'
 
     def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
-        if not workspace:
+        if workspace is None:
             workspace = [-2, -2, -2, 2, 2, 2]
         if rospy.get_param('verbose'):
             rospy.loginfo('Move group: {}'.format(group_name))
@@ -71,7 +71,7 @@ class PathPlanner:
 
         Raises (rospy.ServiceException): Failed to execute movement.
         """
-        if not orientation:
+        if orientation is None:
             self.group.set_position_target(position)
         else:
             self.group.set_pose_target(create_pose(self.frame_id, position, orientation))
@@ -92,7 +92,7 @@ class PathPlanner:
 
         Returns (bool): Whether or not the movement executed successfully.
         """
-        if not orientation_constraints:
+        if orientation_constraints is None:
             orientation_constraints = []
         target = create_pose(self.frame_id, position, orientation)
         if rospy.get_param('verbose'):

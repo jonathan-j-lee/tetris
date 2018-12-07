@@ -42,7 +42,7 @@
 
   <param name="tile_size" value="$(arg marker_size)" />
 
-  <include file="$(find tetris)/launch/baxter_state_publisher.launch" />
+  <!-- <include file="$(find tetris)/launch/baxter_state_publisher.launch" /> -->
   <node name="ar_track_alvar" pkg="ar_track_alvar" type="individualMarkersNoKinect"
         respawn="true" output="log"
         args="$(arg marker_size) $(arg max_new_marker_error) $(arg max_track_error)
