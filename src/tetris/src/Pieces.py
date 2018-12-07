@@ -57,7 +57,7 @@ class SquareTile(Tile):
     uniqueRotations = 1
 
     ar_marker_id = "ar_marker_0"
-    xOffset = (np.sqrt(2) / 100) + (Piece.tileWidth / 2)
+    xOffset = - ((np.sqrt(2) / 100) + (Piece.tileWidth / 2))
     yOffset = - ((np.sqrt(2) / 100) + (Piece.tileWidth / 2))
     centerOfMassOffset = (xOffset, yOffset)
 

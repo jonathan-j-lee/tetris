@@ -71,11 +71,9 @@ class TetrisSolver(object):
         for i in range(tileRows):
             for j in range(tileCols):
                 if tile[i][j] > 0: #solid piece of tile, place it
-                    suffix = "0" * self.numDigits(placementNumber)
                     if tile[i][j] == 2: #center of tile
                         centerx, centery = row+i, col+j
-                        suffix = str(placementNumber)
-                    mat[row+i][col+j] = int(str(placementNumber) + suffix)
+                    mat[row+i][col+j] = placementNumber
         return mat, centerx, centery
 
     def numDigits(self, i):
@@ -309,6 +307,7 @@ class OurSolver(object):
         rotation_quaternion = self.rotations[rot]
         tileType = self.getTileType(piece)
 
+        print("AR tag coordinates: x={}, y={}, rot={}".format(x, y, rot))
         """
             x, y = location for AR tag
             x + comOffset, y + comOffset = location for CoM if not rotated
@@ -322,25 +321,29 @@ class OurSolver(object):
         point_CoM = numpy.array([
                 [tileType.centerOfMassOffset[0]],
                 [tileType.centerOfMassOffset[1]],
-                [0]
+                [0],
+                [1]
             ])
         rotated_CoM = numpy.dot(M, point_CoM)
         translation = numpy.array([
                 [x],
                 [y],
-                [z]
+                [z],
+                [0]
             ])
-        transformed_CoM = (rotated_CoM + translation)[0]
+        transformed_CoM = (rotated_CoM + translation)
 
         piece_pose = PoseStamped()
         piece_pose.header.frame_id = self.board_ar_marker_id
-        piece_pose.pose.position.x = transformed_CoM[0]
-        piece_pose.pose.position.y = transformed_CoM[1]
-        piece_pose.pose.position.z = transformed_CoM[2] #should be 0
+        piece_pose.pose.position.x = transformed_CoM[0][0]
+        piece_pose.pose.position.y = transformed_CoM[1][0]
+        piece_pose.pose.position.z = transformed_CoM[2][0] #should be 0
         piece_pose.pose.orientation.x = rotation_quaternion[0]
         piece_pose.pose.orientation.y = rotation_quaternion[1]
         piece_pose.pose.orientation.z = rotation_quaternion[2]
         piece_pose.pose.orientation.w = rotation_quaternion[3]
+        print("Piece pose wrt board:")
+        print(piece_pose.pose)
         return piece_pose
 
     def getTileType(self, piece):

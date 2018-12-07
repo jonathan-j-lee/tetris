@@ -28,19 +28,27 @@ def main():
     """
     pap = PickAndPlace(z_offset=z_offset)  
     addTableAtHeight(pap, table_height) 
-
-    piece = pap.solver.getOrderForPlacement()[0]
-    print("Piece: ", pap.solver.tileTypes[piece.tile_index].__name__)
-    print("\tR: {}, C: {}, rot: {}".format(piece.row, piece.col, piece.rotation))
-    print("\tCoordinates: {}".format(pap.solver.getCoordinatesForARTagOfPiece(piece)))
-    print(pap.move_to_piece_CoM(piece))
+    
+    #resetGripper()
+    testCoMThenSol(pap)
     #pap.move_to_rotation(0.610, 0.032, table_height + 0.008, pap.ROT_0)
     #testMoveToRotation(pap, 0.763, -0.135, -0.170)
     #testRotateBy(pap)
-    #resetGripper()
     #testGrasp(pap)
     #testRotations(pap)
     #testPickAndPlace(pap)
+
+def testCoMThenSol(pap):
+    piece = getPiece(pap, "SquareTile")
+    pap.move_to_piece_CoM(piece)
+    raw_input('Press [Enter] to move to solution: ')
+    pap.move_to_piece_solution_pose(piece)
+
+def getPiece(pap, name):
+    for piece in pap.solver.getOrderForPlacement():
+        if pap.solver.tileTypes[piece.tile_index].__name__ == name:
+            return piece 
+    return None
 
 def testMoveToARMarker(pap):
     pap.table_height = table_height
@@ -48,6 +56,7 @@ def testMoveToARMarker(pap):
 
 def addTableAtHeight(pap, z):
     pap.add_obstacle("table", 0.768, 0.032, z, 1.0, 1.0, 0.1)
+    pap.table_height = z + .005
 
 def removeTable(pap):
     pap.remove_obstacle("table")
@@ -64,12 +73,6 @@ def resetGripper():
     print('Closing...')
     right_gripper.close()
     rospy.sleep(1.0)
-
-    #Open the right gripper
-    print('Opening...')
-    right_gripper.open()
-    rospy.sleep(1.0)
-    print('Done!')
 
 def testMoveToRotation(pap, x, y, z):
     #GOES TO this random spot

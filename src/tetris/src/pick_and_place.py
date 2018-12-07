@@ -112,7 +112,7 @@ class PickAndPlace(object):
         if self.table_height == -1:
             print("FORGOT TO SET TABLE HEIGHT")
             return False
-        return self.move_to_pose(x, y, self.table_height + 0.008, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+        return self.move_to_pose(x, y, self.table_height + 0.018, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w) #TODO: grasp
 
     def move_to_pose_on_board(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         if self.table_height == -1:
@@ -353,24 +353,49 @@ class PickAndPlace(object):
         piece_CoM_pose_stamped.pose.orientation.y = 0
         piece_CoM_pose_stamped.pose.orientation.z = 0
         piece_CoM_pose_stamped.pose.orientation.w = 1
-        
+        print("Piece CoM wrt piece's AR tag")
+        print(piece_CoM_pose_stamped.pose)
+
         transform_from_ar_marker_to_base = self.getTransformFromARTag(tileType.ar_marker_id)
+        """
+        ignore any orientation about x, y axis of AR tag (high probability that it's wrong)
+        but orientation about z is correct and is all we care about, xy plane is flat with table
+        """
+        o_x = transform_from_ar_marker_to_base.transform.rotation.x
+        o_y = transform_from_ar_marker_to_base.transform.rotation.y
+        o_z = transform_from_ar_marker_to_base.transform.rotation.z
+        o_w = transform_from_ar_marker_to_base.transform.rotation.w
+        e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
+        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z) #only get rotation about z
+        transform_from_ar_marker_to_base.transform.rotation.x = new_ox
+        transform_from_ar_marker_to_base.transform.rotation.y = new_oy
+        transform_from_ar_marker_to_base.transform.rotation.z = new_oz
+        transform_from_ar_marker_to_base.transform.rotation.w = new_ow
+        print("AR tag pose wrt base")
+        print(transform_from_ar_marker_to_base.transform)
+
         piece_CoM_pose_wrt_base = tf2_geometry_msgs.do_transform_pose(piece_CoM_pose_stamped, transform_from_ar_marker_to_base).pose
+        print("Piece CoM wrt base")
         print(piece_CoM_pose_wrt_base)
 
+        gripper_ox, gripper_oy, gripper_oz, gripper_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2)) #off by 90 deg CW
         x, y = piece_CoM_pose_wrt_base.position.x, piece_CoM_pose_wrt_base.position.y
-        o_x, o_y, o_z, o_w = piece_CoM_pose_wrt_base.orientation.x, piece_CoM_pose_wrt_base.orientation.y, piece_CoM_pose_wrt_base.orientation.z, piece_CoM_pose_wrt_base.orientation.w
-        e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
-
-        # orientation may be off about x, y axis of AR tag
-        # but we only care about the rotation about z axis (this is for figuring out the orientation of the gripper to pick up the piece in)
-        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2)) #off by 90 deg CW for some reason
-        print(new_ox, new_oy, new_oz, new_ow)
-        return self.move_to_pose_on_table(x, y, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)
+        return self.move_to_pose_on_table(x, y, o_x=gripper_ow, o_y=gripper_oz, o_z=0.0, o_w=0.0)
 
     def move_to_piece_solution_pose(self, piece):
         piece_CoM_pose_wrt_base = self.getBasePoseForPiece(piece)
-        return self.move_to_pose_on_board(x, y, o_x=new_ow, o_y=new_oz, o_z=0.0, o_w=0.0)        
+        print("Solution CoM wrt base")
+        print(piece_CoM_pose_wrt_base)
+        x, y = piece_CoM_pose_wrt_base.position.x, piece_CoM_pose_wrt_base.position.y
+        orientation = piece_CoM_pose_wrt_base.orientation
+        o_x, o_y, o_z, o_w = orientation.x, orientation.y, orientation.z, orientation.w
+
+        #rotate prientation by 90 CCW
+        q_rot = quaternion_from_euler(0, 0, np.pi / 2)
+        q_curr = (o_x, o_y, o_z, o_w)
+        q_new = quaternion_multiply(q_rot, q_curr)
+        o_x, o_y, o_z, o_w = q_new[0], q_new[1], q_new[2], q_new[3]
+        return self.move_to_pose_on_board(x, y, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)        
 
     def getTransformFromBoard(self):
         return self.getTransformFromARTag(self.solver.board_ar_marker_id)
@@ -382,6 +407,24 @@ class PickAndPlace(object):
         """
         #Pose of CoM w.r.t. top left AR tag of board
         board_pose_stamped = self.solver.getPoseForPiece(piece)
+        
         transform_from_board_to_base = self.getTransformFromBoard()
+        """
+        ignore any orientation about x, y axis of AR tag (high probability that it's wrong)
+        but orientation about z is correct and is all we care about, xy plane is flat with table
+        """
+        o_x = transform_from_board_to_base.transform.rotation.x
+        o_y = transform_from_board_to_base.transform.rotation.y
+        o_z = transform_from_board_to_base.transform.rotation.z
+        o_w = transform_from_board_to_base.transform.rotation.w
+        e_x, e_y, e_z = euler_from_quaternion([o_x, o_y, o_z, o_w])
+        new_ox, new_oy, new_oz, new_ow = quaternion_from_euler(0, 0, e_z)
+        transform_from_board_to_base.transform.rotation.x = new_ox
+        transform_from_board_to_base.transform.rotation.y = new_oy
+        transform_from_board_to_base.transform.rotation.z = new_oz
+        transform_from_board_to_base.transform.rotation.w = new_ow
+        print("Transform to board top left")
+        print(transform_from_board_to_base.transform)
+        
         base_pose = tf2_geometry_msgs.do_transform_pose(board_pose_stamped, transform_from_board_to_base).pose
         return base_pose
