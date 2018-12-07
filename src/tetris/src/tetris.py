@@ -75,7 +75,7 @@ def main():
     rospack = rospkg.RosPack()
     solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
-    img_pub = rospy.Publisher('/robot/xdisplay', Image, latch=True)
+    img_pub = rospy.Publisher('/robot/xdisplay', Image, latch=True, queue_size=5)
 
     while not rospy.is_shutdown() and i < len(solution):
         tile = solution[i]

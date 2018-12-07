@@ -102,12 +102,20 @@ class PNPEnvironment(Environment):
         return convert_pose(offset)
 
     def find_table(self):
-        # TODO
-        return self.get_rel_transform(marker_frame(rospy.get_param('board_top_left_marker')))
+        corners = ['board_top_left_marker', 'board_top_right_marker',
+                   'board_bottom_right_marker', 'board_bottom_left_marker']
+        offsets = [(0, 0), (-54, 0), (-54, 42), (0, 42)]
+        for corner, (x_offset, y_offset) in zip(corners, offsets):
+            marker = marker_frame(rospy.get_param(corner))
+            trans = self.get_rel_transform(marker)
+            if trans:
+                return trans, x_offset, y_offset
+        raise ValueError('Unable to find any board markers.')
 
     def find_slot_transform(self, tile):
         tile_size = rospy.get_param('tile_size')
-        top_left, tile_type = self.find_table(), TILE_TYPES[tile.tile_name]
+        corner, x_offset, y_offset = self.find_table()
+        tile_type = TILE_TYPES[tile.tile_name]
         pattern = rotate(tile_type.pattern, tile.rotations)
         for row in range(pattern.shape[0]):
             for column in range(pattern.shape[1]):
@@ -117,8 +125,8 @@ class PNPEnvironment(Environment):
             raise ValueError('AR tag not found in pattern.')
 
         row, column = row + tile.row, column + tile.column
-        x_offset = column*tile_size
-        y_offset = row*tile_size
+        x_offset += column*tile_size
+        y_offset -= row*tile_size
         # TODO: refactor
         if rotations == 0:
             x_offset += tile_type.x_offset
