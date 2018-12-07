@@ -58,13 +58,15 @@ class Environment:
         self.listener = TransformListener(self.buffer, queue_size=queue_size)
 
     def get_transform(self, target_frame, source_frame, timeout=5):
-        try:
-            return self.buffer.lookup_transform(target_frame, source_frame,
-                                                rospy.Time(), rospy.Duration(timeout))
-        except TransformException:
-            if rospy.get_param('verbose'):
-                template = 'Failed to find transform: "{}" -> "{}"'
-                rospy.logwarn(template.format(source_frame, target_frame))
+        start = rospy.get_time()
+        while not rospy.is_shutdown() and rospy.get_time() - start < timeout:
+            try:
+                return self.buffer.lookup_transform(target_frame, source_frame,
+                                                    rospy.Time())
+            except TransformException:
+                if rospy.get_param('verbose'):
+                    template = 'Failed to find transform: "{}" -> "{}"'
+                    rospy.logwarn(template.format(source_frame, target_frame))
 
 
 class PNPEnvironment(Environment):
