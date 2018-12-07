@@ -58,10 +58,12 @@ class Environment:
         self.listener = TransformListener(self.buffer)
 
     def get_transform(self, target_frame, source_frame, timeout=5):
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Acquiring transform: {} -> {}'.format(source_frame, target_frame))
         start = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time() - start < timeout:
             try:
-                return self.buffer.lookup_transform(source_frame, target_frame, # target_frame, source_frame,
+                return self.buffer.lookup_transform(target_frame, source_frame,
                                                     rospy.Time())
             except TransformException:
                 pass
@@ -93,8 +95,8 @@ class PNPEnvironment(Environment):
 
     def find_tile_center(self, tile_name):
         tile_type = TILE_TYPES[tile_name]
-        trans = self.get_transform()  #FIXME: self.get_rel_transform(marker_frame(tile_type.marker_id))
-        if not trans:
+        trans = self.get_rel_transform(marker_frame(tile_type.marker_id))
+        if trans is None:
             raise ValueError('Unable to obtain transform.')
         rot = trans.transform.rotation
         _, _, e_z = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
