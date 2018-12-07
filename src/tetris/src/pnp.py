@@ -3,12 +3,10 @@ pnp -- Module for performing pick-and-place tasks.
 """
 
 from __future__ import division, generators, print_function, unicode_literals
-
-from baxter_interface import Limb, Gripper, AnalogIO
 import numpy as np
+from baxter_interface import Gripper, AnalogIO
 import rospy
-
-from env import PNPEnvironment
+from env import log_pose, add_transform_offset, convert_pose, PNPEnvironment
 from planner import PathPlanner
 
 
@@ -28,6 +26,8 @@ class SuctionPNPTask:
         self.gripper_side = gripper_side
         self.planner = PathPlanner(frame_id, gripper_side + '_arm')
         self.calibrate_gripper()
+        if rospy.get_param('verbose'):
+            rospy.info('Initialized PNP task.')
 
     def is_grasping(self, threshold=50):
         """
@@ -94,8 +94,9 @@ class TetrisPNPTask(SuctionPNPTask):
         current_pos[2] += z_offset
         steps = 0
         while not rospy.is_shutdown() and steps < z_max_steps:
-            success = self.planner.move_to_pose(current_pos, orientation)
-            if not success:
+            try:
+                self.planner.move_to_pose(current_pos, orientation)
+            except Exception:
                 break
             self.close_gripper()
             if not self.is_grasping():
@@ -103,16 +104,22 @@ class TetrisPNPTask(SuctionPNPTask):
                 current_pos[2] -= z_delta
             else:
                 self.env.table_height = current_pos[2] - rospy.get_param('board_thickness')
-                self.planner.log_pose('Grasped object.', position, orientation)
+                log_pose('Grasped object.', position, orientation)
                 return True
             steps += 1
-        if self.verbose:
-            self.planner.log_pose('Failed to grasp object.', position, orientation)
+        if rospy.get_param('verbose'):
+            log_pose('Failed to grasp object.', position, orientation)
         return False
 
     def pick(self, tile_name):
-        try:
-            position, orientation = self.env.find_tile_center(tile_name)
-        except ValueError:
-            return False
-        return self.grasp(position, orientation)
+        center_pos, center_orien = self.env.find_tile_center(tile_name)
+        return self.grasp(center_pos, center_orien)
+
+    def place(self):
+        trans = self.env.get_gripper_transform()
+        lift = rospy.get_param('lift_offset')
+        thickness = rospy.get_param('board_thickness')
+        offset = np.array([0, 0, lift + 2*thickness])
+
+        position, orientation = convert_pose(add_transform_offset(trans, offset))
+        self.planner.move_to_pose(position, orientation)

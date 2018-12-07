@@ -3,12 +3,11 @@ planner -- Module for performing path planning.
 """
 
 from __future__ import division, generators, print_function, unicode_literals
-import numpy as np
-from geometry_msgs.msg import PoseStamped
 from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
 from moveit_msgs.msg import OrientationConstraint, Constraints, CollisionObject
 import rospy
 from shape_msgs.msg import SolidPrimitive
+from env import create_pose, log_pose
 
 
 class PathPlanner:
@@ -30,8 +29,6 @@ class PathPlanner:
         group: The MoveIt MoveGroup.
         scene_publisher: A publisher that updates the planning scene.
     """
-    DEFAULT_POSITION = np.zeros(3)
-    DEFAULT_ORIENTATION = np.array([0, -1, 0, 0])
     PLANNING_SCENE_TOPIC = '/collision_object'
 
     def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
@@ -58,27 +55,6 @@ class PathPlanner:
         if rospy.get_param('verbose'):
             rospy.logwarn('Terminated path planner.')
 
-    def create_pose(self, position=None, orientation=None):
-        """ Convert a pose as arrays into a ROS-compatible timestamped pose data type. """
-        if not position:
-            position = self.DEFAULT_POSITION
-        if not orientation:
-            orientation = self.DEFAULT_ORIENTATION
-        target = PoseStamped()
-        target.header.frame_id = self.frame_id
-        target_pos, target_orien = target.pose.position, target.pose.orientation
-        target_pos.x, target_pos.y, target_pos.z = position
-        target_orien.x, target_orien.y, target_orien.z, target_orien.w = orientation
-        return target
-
-    def log_pose(self, msg, position, orientation=None):
-        """ Logs the given pose. """
-        if not orientation:
-            rospy.loginfo('{} (x={}, y={}, z={})'.format(msg, *position))
-        else:
-            template = '{} (x={}, y={}, z={}, o_x={}, o_y={}, o_z={}, o_w={})'
-            rospy.loginfo(template.format(msg, *np.concatenate((position, orientation))))
-
     def move_to_pose(self, position, orientation=None):
         """
         Move the end effector to the given pose naively.
@@ -87,20 +63,15 @@ class PathPlanner:
             position: The x, y, and z coordinates to move to.
             orientation: The orientation to take (quaternion, optional).
 
-        Returns (bool): Whether or not the movement executed successfully.
+        Raises (rospy.ServiceException): Failed to execute movement.
         """
         if not orientation:
             self.group.set_position_target(position)
         else:
-            self.group.set_pose_target(self.create_pose(position, orientation))
+            self.group.set_pose_target(create_pose(self.frame_id, position, orientation))
         if rospy.get_param('verbose'):
-            self.log_pose('Moving to pose.', position, orientation)
-        try:
-            self.group.go()
-        except rospy.ServiceException:
-            return False
-        else:
-            return True
+            log_pose('Moving to pose.', position, orientation)
+        self.group.go()
 
     def move_to_pose_with_planner(self, position, orientation=None, orientation_constraints=None):
         """
@@ -117,15 +88,12 @@ class PathPlanner:
         """
         if not orientation_constraints:
             orientation_constraints = []
-        target = self.create_pose(position, orientation)
+        target = create_pose(self.frame_id, position, orientation)
         if rospy.get_param('verbose'):
-            self.log_pose('Moving to pose with planner.', position, orientation)
-        try:
-            plan = self.plan_to_pose(target, orientation_constraints)
-        except:  # FIXME: find and use a more specific exception
-            rospy.logwarn('Failed to generate plan.')
-            return False
-        return self.group.execute(plan, True)
+            log_pose('Moving to pose with planner.', position, orientation)
+        plan = self.plan_to_pose(target, orientation_constraints)
+        if not self.group.execute(plan, True):
+            raise ValueError('Failed to execute movement.')
 
     def plan_to_pose(self, target, orientation_constraints):
         """
@@ -156,7 +124,7 @@ class PathPlanner:
                 relative to the global frame `frame_id`.
             com_orientation: The orientation of the COM.
         """
-        pose = self.create_pose(com_position, com_orientation)
+        pose = create_pose(self.frame_id, com_position, com_orientation)
         obj = CollisionObject()
         obj.id, obj.operation, obj.header = name, CollisionObject.ADD, pose.header
         box = SolidPrimitive()
