@@ -69,6 +69,12 @@ class Environment:
 
 class PNPEnvironment(Environment):
     FRAME_MARKER_ID = 7
+    ROTATIONS = np.array([
+        [0, 1, 0, 0],
+        [1/2**0.5, 1/2**0.5, 0, 0],
+        [1, 0, 0, 0],
+        [1/2**0.5, -1/2**0.5, 0, 0],
+    ])
 
     def __init__(self, queue_size=5, table_height=np.nan, frame_id='base',
                  tool_frame_id='right_gripper'):

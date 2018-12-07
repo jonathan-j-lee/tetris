@@ -115,11 +115,24 @@ class TetrisPNPTask(SuctionPNPTask):
         center_pos, center_orien = self.env.find_tile_center(tile_name)
         return self.grasp(center_pos, center_orien)
 
-    def place(self):
+    def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
-        lift = rospy.get_param('lift_offset')
-        thickness = rospy.get_param('board_thickness')
-        offset = np.array([0, 0, lift + 2*thickness])
-
+        offset = np.array([0, 0, z_offset])
         position, orientation = convert_pose(add_transform_offset(trans, offset))
         self.planner.move_to_pose(position, orientation)
+
+    def rotate_to(self, orientation):
+        trans = self.env.get_gripper_transform()
+        translation = trans.transform.translation
+        position = np.array([translation.x, translation.y, translation.z])
+        self.planner.move_to_pose(position, orientation)
+
+    def place(self, row, column, rotations):
+        lift = rospy.get_param('lift_offset')
+        thickness = rospy.get_param('board_thickness')
+
+        self.elevate(lift + 2*thickness)
+        self.rotate_to(self.env.ROTATIONS[rotations])
+        # TODO: move to position
+        self.elevate(-lift - thickness + rospy.get_param('drop_offset'))
+        self.open_gripper()
