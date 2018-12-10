@@ -1,18 +1,10 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1">
-    <meta http-http-equiv="Content-Security-Policy" content="default-src 'self' https:;">
-    <title>{{ page.title }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/10.10.2/build.css">
-    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
-  </head>
-  {% include header.html %}
-  <main class="container-lg clearfix">
-    <div class="col-12 float-left f4">
-      {{ content }}
-    </div>
-  </main>
-  {% include footer.html %}
-</html>
+---
+layout: base
+---
+
+<div class="col-12 float-left py-4">
+  <h1>{{ page.title }}</h1>
+</div>
+<div class="col-12 float-left">
+  {{ content }}
+</div>
