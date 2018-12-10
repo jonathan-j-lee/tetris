@@ -2,7 +2,7 @@
 
 This tetris playing robot plays a game that is slightly different than traditional tetris. While using the same pieces, the robot's goal is to solve a puzzle in which all tetris pieces fill the frame without spaces.
 
-This project demonstrates Baxter's use of computer vision, path planning, sensing, and actuation to complete the task of moving components between two places in a two dimensional plane. 
+This project demonstrates Baxter's use of computer vision, path planning, sensing, and actuation to complete the task of moving components between two places in a two dimensional plane. We believe that this task is particularly interesting because of the different shaped pieces adding a level of complexity as well as the increasing difficulty to place each piece on the board as the margin of allowed error becomes smaller.
 
 In order to complete this task the robot had to:
   - Identify which tetris piece is placed on the table
@@ -41,19 +41,6 @@ appropriate visuals. This includes launch files, URDFs, etc.
 (c) Does your solution have any flaws or hacks? What improvements would you make if you had
 additional time?
 ## 6. Team
-(a) Include names and short bios of each member of your project group.
-(b) Describe the major contributions of each team member.
-## 7. Additional materials
-(a) code, URDFs, and launch files you wrote
-(b) CAD models for any hardware you designed
-(c) data sheets for components used in your system
-(d) any additional videos, images, or data from your finished solution
-(e) links to other public sites (e.g., GitHub), if that is where your files are stored
-
-
-
-
-## Team
 
 James Fang:
 
@@ -62,3 +49,11 @@ Her contributions to the project included designing and laser cutting the game p
 
 Jonathan Lee: Currently a third-year EECS undergraduate at UC Berkeley with interests in robotics, artificial intelligence, and computer systems.
 His contributions to the project included integrating AR tracking, writing the project frontend UI, and refining the pick-and-place algorithm.
+
+## 7. Additional materials
+(a) code, URDFs, and launch files you wrote
+(b) CAD models for any hardware you designed
+(c) data sheets for components used in your system
+(d) any additional videos, images, or data from your finished solution
+(e) links to other public sites (e.g., GitHub), if that is where your files are stored
+
