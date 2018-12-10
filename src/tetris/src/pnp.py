@@ -94,10 +94,11 @@ class TetrisPNPTask(SuctionPNPTask):
         current_pos[2] += z_offset
         steps = 0
         while not rospy.is_shutdown() and steps < z_max_steps:
-            try:
-                self.planner.move_to_pose(current_pos, orientation)
-            except Exception:
-                break
+            # try:
+            self.planner.move_to_pose(current_pos, orientation)
+            # except Exception as exc:
+            #     rospy.logerr(exc)
+            #     break
             self.close_gripper()
             if not self.is_grasping():
                 self.open_gripper()
@@ -114,13 +115,14 @@ class TetrisPNPTask(SuctionPNPTask):
     def pick(self, tile_name):
         assert not self.is_grasping()
         center_pos, center_orien = self.env.find_tile_center(tile_name)
+        rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
         return self.grasp(center_pos, center_orien)
 
     def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
         offset = np.array([0, 0, z_offset])
         position, orientation = convert_pose(add_transform_offset(trans, offset))
-        self.planner.move_to_pose(position, orientation)
+        self.planner.move_to_pose_with_planner(position, orientation)
 
     def rotate_to(self, orientation):
         trans = self.env.get_gripper_transform()
@@ -134,11 +136,11 @@ class TetrisPNPTask(SuctionPNPTask):
         thickness = rospy.get_param('board_thickness')
 
         self.elevate(lift + 2*thickness)
-        self.rotate_to(self.env.ROTATIONS[tile.rotations])
         # Remain downwards
         constraint = self.planner.make_orientation_constraint(np.array([0, -1, 0, 0]),
                                                               self.env.tool_frame_id)
         position, orientation = self.env.find_slot_transform(tile)
-        self.planner.move_to_pose(position, orientation)
+        self.planner.move_to_pose_with_planner(position, orientation, [constraint])
+        self.rotate_to(self.env.ROTATIONS[tile.rotations])
         self.elevate(-lift - thickness + rospy.get_param('drop_offset'))
         self.open_gripper()
