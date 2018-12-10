@@ -1,1 +1,6 @@
+timezone: America/Los_Angeles
+permalink: pretty
 theme: jekyll-theme-cayman
+
+exclude:
+  - slides/tetris-puzzle-solver-slides.tex

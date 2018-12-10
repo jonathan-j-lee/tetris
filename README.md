@@ -36,7 +36,7 @@ MoveIt is now ready to compute and execute trajectories on the robot
 
 - `rosrun tetris path_test.py`
 - `rosrun tf tf_echo base reference/right_gripper`
-- `rosrun baxter_tools tuck_arms.py -u`	
+- `rosrun baxter_tools tuck_arms.py -u`
 
 ### Cameras
 - `head_camera', 'left_hand_camera', 'right_hand_camera'
@@ -49,3 +49,11 @@ MoveIt is now ready to compute and execute trajectories on the robot
 3. From solution figure out location (coordinates) to place pieces !
 4. Detect where to pick up the pieces for each piece
 5. Place them in their correct positions (how to get accuracy right?)
+
+## Documentation
+To view the project site locally, run:
+```sh
+$ cd docs
+$ bundle install
+$ bundle exec jekyll serve
+```
