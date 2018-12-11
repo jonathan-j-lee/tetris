@@ -24,23 +24,26 @@ class SuctionPNPTask:
     GRIP_MAX_VALUE = 175
 
     def __init__(self, frame_id='base', gripper_side='right'):
+        assert gripper_side in ('left', 'right')
         self.gripper_side = gripper_side
-        self.limb = Limb(gripper_side)
-        self.planner = PathPlanner(frame_id, gripper_side + '_arm')
+        self.camera_side = 'left' if self.gripper_side == 'right' else 'right'
+        self.gripper_planner = PathPlanner(frame_id, self.gripper_side + '_arm')
+        self.camera_planner = PathPlanner(frame_id, self.camera_side + '_arm')
         self.calibrate_gripper()
         if rospy.get_param('verbose'):
             rospy.loginfo('Initialized PNP task.')
 
-    def set_joint_angles(self, angles, tolerance=0.05, max_steps=1000, period=0.01):
+    def set_joint_angles(self, angles, limb, tolerance=0.05, max_steps=1000, period=0.01):
         all_angles = dict(angles)
-        for name in self.limb.joint_names():
+        for name in limb.joint_names():
             if name not in all_angles:
-                all_angles[name] = self.limb.join_angle(name)
+                all_angles[name] = limb.join_angle(name)
+
         step = 0
-        done = lambda: all(abs(angle - self.limb.joint_angle(name)) < tolerance
+        done = lambda: all(abs(angle - limb.joint_angle(name)) < tolerance
                            for name, angle in all_angles.items())
         while step < max_steps and not done():
-            self.limb.set_joint_positions(all_angles)
+            limb.set_joint_positions(all_angles)
             rospy.sleep(period)
             step += 1
         return done()
@@ -103,10 +106,16 @@ class TetrisPNPTask(SuctionPNPTask):
         self.env = PNPEnvironment(frame_id=frame_id)
 
     def search(self):
-        angles = self.env.ARM_JOINTS_NEUTRAL[self.gripper_side]
-        angles = {self.gripper_side + '_' + name: angle
-                  for name, angle in zip(self.env.JOINT_NAMES, angles)}
-        self.set_joint_angles(angles)
+        # Move gripper arm out of the way of the camera arm
+        self.gripper_planner.move_to_pose(
+            self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)
+
+        for position in self.env.SEARCH_POSITIONS:
+            self.camera_planner.move_to_pose(position, self.env.DOWNWARDS)
+            rospy.sleep(2)  # TODO: remove
+
+        self.camera_planner.move_to_pose(
+            self.env.NEUTRAL_POSITIONS[self.camera_side], self.env.DOWNWARDS)
 
     def grasp(self, position):
         z_offset, z_delta = rospy.get_param('z_offset'), rospy.get_param('z_delta')
@@ -117,7 +126,7 @@ class TetrisPNPTask(SuctionPNPTask):
         steps = 0
         while not rospy.is_shutdown() and steps < z_max_steps:
             try:
-                self.planner.move_to_pose(current_pos, self.env.DOWNWARDS)
+                self.gripper_planner.move_to_pose(current_pos, self.env.DOWNWARDS)
             except Exception as exc:
                 rospy.logerr(exc)
                 break
@@ -138,20 +147,20 @@ class TetrisPNPTask(SuctionPNPTask):
         assert not self.is_grasping()
         center_pos, center_orien = self.env.find_tile_center(tile_name)
         rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
-        # self.planner.move_to_pose(center_pos, self.env.DOWNWARDS)
+        # self.gripper_planner.move_to_pose(center_pos, self.env.DOWNWARDS)
         return self.grasp(center_pos)
 
     def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
         offset = np.array([0, 0, z_offset])
         position, orientation = convert_pose(add_transform_offset(trans, offset))
-        self.planner.move_to_pose_with_planner(position, orientation)
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
 
     def rotate_to(self, orientation):
         trans = self.env.get_gripper_transform()
         translation = trans.transform.translation
         position = np.array([translation.x, translation.y, translation.z])
-        self.planner.move_to_pose(position, orientation)
+        self.gripper_planner.move_to_pose(position, orientation)
 
     def place(self, tile):
         assert self.is_grasping()
@@ -160,10 +169,10 @@ class TetrisPNPTask(SuctionPNPTask):
 
         self.elevate(lift + 2*thickness)
         # Remain downwards
-        constraint = self.planner.make_orientation_constraint(self.env.DOWNWARDS,
+        constraint = self.gripper_planner.make_orientation_constraint(self.env.DOWNWARDS,
                                                               self.env.tool_frame_id)
         position, orientation = self.env.find_slot_transform(tile)
-        self.planner.move_to_pose_with_planner(position, orientation, [constraint])
+        self.gripper_planner.move_to_pose_with_planner(position, orientation, [constraint])
         self.rotate_to(self.env.ROTATIONS[tile.rotations])
         self.elevate(-lift - thickness + rospy.get_param('drop_offset'))
         self.open_gripper()

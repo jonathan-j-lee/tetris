@@ -35,7 +35,8 @@ class PathPlanner:
     """
     PLANNING_SCENE_TOPIC = '/collision_object'
 
-    def __init__(self, frame_id, group_name, time_limit=5, workspace=None):
+    def __init__(self, frame_id, group_name, time_limit=5, workspace=None,
+                 register_shutdown=True):
         if workspace is None:
             workspace = [-2, -2, -2, 2, 2, 2]
         if rospy.get_param('verbose'):
@@ -48,7 +49,8 @@ class PathPlanner:
                                                CollisionObject, queue_size=10)
         self.group = MoveGroupCommander(group_name)
 
-        rospy.on_shutdown(self.shutdown)
+        if register_shutdown:
+            rospy.on_shutdown(self.shutdown)
         self.group.set_planning_time(time_limit)
         self.group.set_workspace(workspace)
         rospy.sleep(0.5)  # Sleep to ensure initialization has finished.

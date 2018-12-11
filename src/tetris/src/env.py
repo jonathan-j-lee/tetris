@@ -80,16 +80,17 @@ class PNPEnvironment(Environment):
         [1, 0, 0, 0],
         [1/2**0.5, -1/2**0.5, 0, 0],
     ])
+    DOWNWARDS = np.array([0, -1, 0, 0])
     JOINT_NAMES = ['e0', 'e1', 's0', 's1', 'w0', 'w1', 'w2']
-    ARM_JOINTS_NEUTRAL = {
-        'left': np.array([-0.3762, 2.1852, 1.05500, -1.2966, 0.1848, 0.8326, 3.0158]),
-        'right': np.array([0.2462, 2.2837, -0.8932, -1.3395, -3.0461, -0.5963, 2.9602]),
+    NEUTRAL_POSITIONS = {
+        'left': np.array([0.094, 0.754, 0.060]),
+        'right': np.array([0.132, -0.708, 0.209]),
     }
-    CAMERA_POSITIONS = np.array([
-        [0.577, -0.108, 0.080],  # Board bottom left
-        [0.638, 0.413, 0.183],  # Board top left
-        [0.423, 0.600, 0.117],  # Board top right
-        [0.250, 0.496, 0.204],  # Board bottom right
+    SEARCH_POSITIONS = np.array([
+        [0.471, 0.313, 0.207],  # Board bottom left
+        [0.755, 0.149, 0.228],  # Board top left
+        [0.677, -0.127, 0.130],  # Board top right
+        [0.542, -0.354, 0.225],  # Board bottom right
     ])
 
     def __init__(self, table_height=np.nan, frame_id='base',
@@ -97,6 +98,9 @@ class PNPEnvironment(Environment):
         Environment.__init__(self)
         self.table_height = table_height
         self.frame_id, self.tool_frame_id = frame_id, tool_frame_id
+
+    def get_joint_names(self, side):
+        return [side + '_' + name for name in self.JOINT_NAMES]
 
     def get_rel_transform(self, frame):
         return self.get_transform(frame, self.frame_id)
