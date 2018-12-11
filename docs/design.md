@@ -5,25 +5,30 @@ about: design
 # Design Criteria 
 In order to complete this task the robot had to:
 * Identify which tetris piece is placed on the table
-* Find the correct location and orientation of its initial position
-* Pick up the piece with a suction cup correctly with respect to the center of mass
-* Compute the transform from its initial position and orientation to its final orientation
-* Place it into its final location correctly
+* Find the correct location and orientation of the piece's initial position
+* Pick up the piece with a vacuum gripper in a stable manner
+* Compute the piece's solution on the board
+* Place the piece onto its solution location in the correct orientation
+
 
 This project will allow us the robot to complete a full game of the tetris puzzle.
 
 ![Completed puzzle]({{ site.baseurl }}/assets/images/completed-puzzle.png)
 
 # Design Choices
-We chose to use computer vision to identify the type of tetris pieces and the board as well as its location and orientation. The suction gripper was chosen to pick up the pieces because of its more stable hold on the thin pieces that the electric gripper did not have. Because the right hand camera was attached to the suction gripper and its poorer quality, the left hand camera was chosen to locate and identify the pieces. The pieces were sanded down to fit more easily into the board. The MoveIt! package was used for path planning and the suction gripper would always initially move to a location that was slightly above where it would pick up and then lower using a sensor to check if the object had been grasped. 
+* The pieces were sanded down to fit together more easily on the board. 
+* We chose to use computer vision to identify the type of tetris pieces and the board as well as its location and orientation. We use the left-hand camera to locate and identify the pieces (the head camera is not able to get a good view of the table). 
+* The vacuum gripper was chosen for pick-and-place because it is able to obtain a more stable hold on the thin pieces than the electric gripper. When attempting to grasp a piece, we move the gripper to some safe margin above the piece and use the sensor attached to the gripper to determine whether the vacuum has created a good seal (analog value above a threshold of 47). We then slowly iterate between lowering the gripper and querying for a good seal until we have successfully grasped the piece. This reduces the negative effects of any gripper positional error in the z direction and is a safe way to ensure we have grasped the piece .
+* The `MoveIt` package is used for path planning to ensure that we avoid obstacles like the table and board.
 
 ![Gripper holding piece]({{ site.baseurl }}/assets/images/gripper-holding-piece.jpg)
 
 # Trade offs
-We originally chose not to use AR tags because the very specified and geometric shapes of the tetris pieces seemed simple to identify, but the increasing simplicity of the AR tags made them more favorable in the end. We chose to put unique AR tags on each type of piece with a specified orientation. We placed each AR tag on the pieces by rastering them into the wood in order to more accurately place their location. The contrast between the dark raster and the light wood was not enough so the AR tags had to be painted. Because each type of piece had only one AR marker, the pieces had to be placed sequentially and individually on the table so the robot would not get confused with multiple of the same AR tag in front of the camera
+We originally planned to NOT use AR markers because we thought the simple geometry of tetris pieces would be easy to identify with vision, but we were spending too much time trying to get it to work. In the end, we fell back on AR markers. 
 
-# Robustness, Durability, and Efficiency of Design
-The action of moving the gripper some margin above the object and using the built in sensor to determine whether the suction gripper has grasped the object greatly reduces the negative effects of error in the z direction. Sanding down the edges of the pieces gives the gripper a larger margin of allowed error in the x and y directions by letting the pieces slip more easily into its cut out hole on the board. 
+Each of the 7 tetris piece types has a unique AR marker rasterized on it to ensure precision. The contrast between the dark raster and the light wood turned out to be poor as the camera could not reliably detect the AR markers, so the AR markers had to be painted. 
+
+Because all pieces of the same type share an AR marker, our implementation does not allow multiple pieces of the same type to be in front of the camera simultaneously. Instead, it handles the pieces one by one so that there is no potential for conflict in AR detection.
 
 <br/><br/><br/>
 
