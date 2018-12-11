@@ -12,17 +12,19 @@ The picture above shows each piece and which AR marker is rasterized on it and w
 
 To complete its task, we have the Baxter robot:
 1) __Figure out which Tetris pieces it's working with and compute a Tetris solution__. 
-We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution.    
-    We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps.
+  We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution.    
+  
+  We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps.
 2) __From the solution, choose a piece to execute pick-and-place__.
-We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame). 
+  We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame). 
+  
   Therefore, we simply choose the next piece in row major order as given by the solution. The code will request the user for the selected piece type. The user will place the requested piece so that the left-hand camera can see it and the right hand can grip it.
 3) __Pick up the chosen piece at its red dot__.
-We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.
-
-We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to go to that pose (position + orientation) and activate the vacuum gripper. 
-
-To ensure that we have picked up the piece, we 
-4) move to it’s solution place on board and drop
+  We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.
+  
+  We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper. 
+  
+  To ensure that we have picked up the piece, we first have the gripper go to a position we know is safely above the red dot (i.e. above the height of the table). We tell the vacuum gripper to start suction and check whether it has grasped anything. This is done by querying the analog sensor on the vacuum gripper, and if the value is above a certain threshold (we use 47), that indicates that the gripper has achieved a successful seal and has grasped the piece. Else, we stop suction and lower the gripper slightly and try again until we have grasped the piece.
+4) __Finally, move the piece to its solution place on board and drop it off__.
 	i) rotate to match board orientation
 	ii) rotate to piece’s rotation w.r.t. board
