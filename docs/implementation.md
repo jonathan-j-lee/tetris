@@ -24,7 +24,7 @@ To complete its task, we have the Baxter robot:
 
    The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps. 
 
-   ![Tetris solver solution]({{ site.baseurl }}/assets/images/piece-ar-com.png) <!-- CHANGE THIS -->
+   ![Tetris solver solution]({{ site.baseurl }}/assets/images/solver-solution.png)
 
 
 2) __From the solution, choose a piece to execute pick-and-place__
@@ -47,15 +47,15 @@ To complete its task, we have the Baxter robot:
 
 4) __Finally, move the piece to its solution place on board and drop it off__
 
+   ![Camera POV of board]({{ site.baseurl }}/assets/images/camera-rviz-board.png)
+
    We find the location of the top left corner of the board using an AR marker bundle. This bundle specifies that the 4 AR markers on the board are attached to a single rigid body. Detecting any of the 4 markers should give us the location of the "master" marker (i.e. the top left marker on the board). The `ar_track_alvar` package has a node `findMarkerBundles` that takes in an XML file specifying the bundle and publishes the master marker transform.
 
    We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper.
 
    We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.
 
-   ![Camera POV of board]({{ site.baseurl }}/assets/images/camera-rviz-board.png)
 
-   
 5) __Repeat from step 2 until all pieces in solution have been placed__
 
 <br/><br/><br/>
