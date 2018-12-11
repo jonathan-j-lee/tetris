@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!--
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' https:;">
+    -->
+    <title>{{ page.title }}</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Primer/10.10.2/build.css">
+    <script type="text/javascript" async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS_HTML"></script>
+    <style type="text/css">
+      /* .UnderlineNav { overflow: auto; } */
+      img { width: 100%; }
+    </style>
+  </head>
+  {% include header.html %}
+  <main class="container-lg clearfix f4">
+    <div class="gutter-lg-spacious">
+      {{ content }}
+    </div>
+  </main>
+  {% include footer.html %}
+</html>
