@@ -27,30 +27,38 @@ To complete its task, we have the Baxter robot:
           </p>
      </li>
      <li>
-          <b>From the solution, choose a piece to execute pick-and-place</b>
-          <ul>
-               <li>We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame).</li>
-               <li>Therefore, we simply choose the next piece in row major order as given by the solution. The code will request the user for the selected piece type. The user will place the requested piece so that the left-hand camera can see it and the right hand can grip it.</li>
-          </ul>
+          <p>
+               <b>From the solution, choose a piece to execute pick-and-place</b>
+               <ul>
+                    <li>We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame).</li>
+                    <li>Therefore, we simply choose the next piece in row major order as given by the solution. The code will request the user for the selected piece type. The user will place the requested piece so that the left-hand camera can see it and the right hand can grip it.</li>
+               </ul>
+          </p>
      </li>
      <li>
-          <b>Pick up the chosen piece at its red dot</b>
-          <ul>
-               <li>We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.</li>
-               <li>We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper.</li>
-               <li>To ensure that we have picked up the piece, we first have the gripper go to a position we know is safely above the red dot (i.e. above the height of the table). We tell the vacuum gripper to start suction and check whether it has grasped anything. This is done by querying the analog sensor on the vacuum gripper, and if the value is above a certain threshold (we use 47), that indicates that the gripper has achieved a successful seal and has grasped the piece. Else, we stop suction and lower the gripper slightly and try again until we have grasped the piece. We then lift the gripper above the plane of the table and board.</li>
-          </ul>
+          <p>
+               <b>Pick up the chosen piece at its red dot</b>
+               <ul>
+                    <li>We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.</li>
+                    <li>We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper.</li>
+                    <li>To ensure that we have picked up the piece, we first have the gripper go to a position we know is safely above the red dot (i.e. above the height of the table). We tell the vacuum gripper to start suction and check whether it has grasped anything. This is done by querying the analog sensor on the vacuum gripper, and if the value is above a certain threshold (we use 47), that indicates that the gripper has achieved a successful seal and has grasped the piece. Else, we stop suction and lower the gripper slightly and try again until we have grasped the piece. We then lift the gripper above the plane of the table and board.</li>
+               </ul>
+          </p>
      </li>
      <li>
-          <b>Finally, move the piece to its solution place on board and drop it off</b>
-          <ul>
-               <li>We find the location of the top left corner of the board using an AR marker bundle. This bundle specifies that the 4 AR markers on the board are attached to a single rigid body. Detecting any of the 4 markers should give us the location of the "master" marker (i.e. the top left marker on the board). The `ar_track_alvar` package has a node `findMarkerBundles` that takes in an XML file specifying the bundle and publishes the master marker transform.</li>
-               <li>We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper.</li>
-               <li>We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.</li>
-          </ul>
+          <p>
+               <b>Finally, move the piece to its solution place on board and drop it off</b>
+               <ul>
+                    <li>We find the location of the top left corner of the board using an AR marker bundle. This bundle specifies that the 4 AR markers on the board are attached to a single rigid body. Detecting any of the 4 markers should give us the location of the "master" marker (i.e. the top left marker on the board). The `ar_track_alvar` package has a node `findMarkerBundles` that takes in an XML file specifying the bundle and publishes the master marker transform.</li>
+                    <li>We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper.</li>
+                    <li>We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.</li>
+               </ul>
+          </p>
      </li>
      <li>
-          <b>Repeat from step 2 until all pieces in solution have been placed</b>
+          <p>
+               <b>Repeat from step 2 until all pieces in solution have been placed</b>
+          </p>
      </li>
 </ol>
 <br/><br/><br/>
