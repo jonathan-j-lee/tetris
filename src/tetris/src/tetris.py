@@ -63,9 +63,7 @@ def main():
         send_image(img_pub, path)
         raw_input(prompt.format(tile.tile_name.upper()))
         try:
-            task.search()
-
-            # task.pick(tile.tile_name)
+            task.pick(tile.tile_name)
             # task.open_gripper()
 
             # task.place(tile)
