@@ -29,7 +29,7 @@ To complete its task, we have the Baxter robot:
 
 2) __From the solution, choose a piece to execute pick-and-place__
 
-   We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame).
+   We have the solver output the location of the AR marker for each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame).
 
    Therefore, we simply choose the next piece in row major order as given by the solution. The code will request the user for the selected piece type. The user will place the requested piece so that the left-hand camera can see it and the right hand can grip it.
 
