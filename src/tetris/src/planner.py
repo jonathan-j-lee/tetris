@@ -35,7 +35,7 @@ class PathPlanner:
     """
     PLANNING_SCENE_TOPIC = '/collision_object'
 
-    def __init__(self, frame_id, group_name, time_limit=5, workspace=None,
+    def __init__(self, frame_id, group_name, time_limit=10, workspace=None,
                  register_shutdown=True):
         if workspace is None:
             workspace = [-2, -2, -2, 2, 2, 2]
@@ -154,7 +154,7 @@ class PathPlanner:
         if rospy.get_param('verbose'):
             rospy.loginfo('Removed object "{}" from planning scene.'.format(name))
 
-    def make_orientation_constraint(self, orientation, link_id):
+    def make_orientation_constraint(self, orientation, link_id, tolerance=0.1, weight=1):
         """
         Make an orientation constraint in the context of the robot and world.
 
@@ -167,6 +167,10 @@ class PathPlanner:
         constraint = OrientationConstraint()
         constraint.header.frame_id = self.frame_id
         constraint.link_name = link_id
-        const_orien = constraint.orienation
+        const_orien = constraint.orientation
         const_orien.x, const_orien.y, const_orien.z, const_orien.w = orientation
+        constraint.absolute_x_axis_tolerance = tolerance
+        constraint.absolute_y_axis_tolerance = tolerance
+        constraint.absolute_z_axis_tolerance = tolerance
+        constraint.weight = weight
         return constraint

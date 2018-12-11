@@ -106,15 +106,14 @@ class TetrisPNPTask(SuctionPNPTask):
         self.env = PNPEnvironment(frame_id=frame_id)
 
     def search(self):
-        # Move gripper arm out of the way of the camera arm
         self.gripper_planner.move_to_pose(
             self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)
 
         for position in self.env.SEARCH_POSITIONS:
-            self.camera_planner.move_to_pose(position, self.env.DOWNWARDS)
+            self.camera_planner.move_to_pose_with_planner(position, self.env.DOWNWARDS)
             rospy.sleep(2)  # TODO: remove
 
-        self.camera_planner.move_to_pose(
+        self.camera_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.camera_side], self.env.DOWNWARDS)
 
     def grasp(self, position):
