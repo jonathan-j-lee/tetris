@@ -10,8 +10,9 @@ In order to complete this task the robot had to:
 * Compute the transform from its initial position and orientation to its final orientation
 * Place it into its final location correctly
 
-
 This project will allow us the robot to complete a full game of the tetris puzzle.
+
+![Completed puzzle]({{ site.baseurl }}/assets/images/completed-puzzle.png)
 
 # Design Choices
 We chose to use computer vision to identify the type of tetris pieces and the board as well as its location and orientation. The suction gripper was chosen to pick up the pieces because of its more stable hold on the thin pieces that the electric gripper did not have. Because the right hand camera was attached to the suction gripper and its poorer quality, the left hand camera was chosen to locate and identify the pieces. The pieces were sanded down to fit more easily into the board. The MoveIt! package was used for path planning and the suction gripper would always initially move to a location that was slightly above where it would pick up and then lower using a sensor to check if the object had been grasped. 
@@ -21,6 +22,5 @@ We originally chose not to use AR tags because the very specified and geometric 
 # Robustness, Durability, and Efficiency of Design
 The action of moving the gripper some margin above the object and using the built in sensor to determine whether the suction gripper has grasped the object greatly reduces the negative effects of error in the z direction. Sanding down the edges of the pieces gives the gripper a larger margin of allowed error in the x and y directions by letting the pieces slip more easily into its cut out hole on the board. 
 
-![Completed puzzle]({{ site.baseurl }}/assets/images/completed-puzzle.png)
 <br/><br/><br/>
 
