@@ -38,8 +38,8 @@ To complete its task, we have the Baxter robot:
      </li>
      <li>
           <p>
-               <b>Pick up the chosen piece at its red dot</b>
-               ![Gripping square at CoM]({{ site.baseurl }}/assets/images/gripper-square-com.png)
+               <b>Pick up the chosen piece at its red dot</b>               
+               <img src='./assets/images/gripper-square-com.png' />
                <ul>
                     <li>We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.</li>
                     <li>We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper.</li>
@@ -55,7 +55,7 @@ To complete its task, we have the Baxter robot:
                     <li>We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper.</li>
                     <li>We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.</li>
                </ul>
-               ![Camera POV of board]({{ site.baseurl }}/assets/images/camera-rviz-board.png)
+               <img src='./assets/images/camera-rviz-board.png' />
           </p>
      </li>
      <li>
