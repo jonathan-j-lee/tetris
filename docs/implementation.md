@@ -7,7 +7,7 @@ about: implementation
 # Fabrication of parts
 We used laser cutters (in the makerspace at Jacobs Institute for Design Innovation) to cut our own Tetris pieces and a board to place them from 1/4-inch thick plywood. The Tetris pieces are so-called because each piece is some union of 4 square blocks. Each square block is 2.5 x 2.5 inches (~6 x 6 cm) and the board can fit 6 x 8 of these blocks. We refer to the 7 unique pieces as the Square, Line, S, Z, Reverse-L, T, and L pieces. 
 
-![Pieces with AR + CoM]({{ site.baseurl }}/assets/images/piece-ar-com.png) <!--change this-->
+![Pieces with AR + CoM]({{ site.baseurl }}/assets/images/piece-ar-com.png)
 
 The picture above shows each piece and which AR marker is rasterized onto it and where (black dot), as well as where we tell our pick-and-place code to pick up the piece (red dot) using a suction gripper. We want this red dot to be as close to the center of mass of the piece as possible, which we can generally locate using the symmetry of the pieces. This is desirable for stability of the piece during pick-and-place, allowing for easier placement (it's a tight fit on the board). 
 
@@ -24,6 +24,7 @@ To complete its task, we have the Baxter robot:
                     <li> We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. </li>
                     <li> The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps. </li>
                </ul>
+               ![Tetris solver solution]({{ site.baseurl }}/assets/images/piece-ar-com.png) <!-- CHANGE THIS -->
           </p>
      </li>
      <li>
@@ -38,6 +39,7 @@ To complete its task, we have the Baxter robot:
      <li>
           <p>
                <b>Pick up the chosen piece at its red dot</b>
+               ![Gripping square at CoM]({{ site.baseurl }}/assets/images/gripper-square-com.png)
                <ul>
                     <li>We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.</li>
                     <li>We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper.</li>
@@ -53,6 +55,7 @@ To complete its task, we have the Baxter robot:
                     <li>We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper.</li>
                     <li>We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.</li>
                </ul>
+               ![Camera POV of board]({{ site.baseurl }}/assets/images/camera-rviz-board.png)
           </p>
      </li>
      <li>
