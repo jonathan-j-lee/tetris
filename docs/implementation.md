@@ -11,7 +11,7 @@ We used laser cutters (in the makerspace at Jacobs Institute for Design Innovati
 
 The picture above shows each piece and which AR marker is rasterized onto it and where (black dot), as well as where we tell our pick-and-place code to pick up the piece (red dot) using a suction gripper. We want this red dot to be as close to the center of mass of the piece as possible, which we can generally locate using the symmetry of the pieces. This is desirable for stability of the piece during pick-and-place, allowing for easier placement (it's a tight fit on the board). 
 
-However, since the rasterized AR marker is an uneven surface, it was hard for the suction gripper to get a good seal if it was overlapping the AR marker. Therefore, we had to place the red dots such that the suction gripper (diameter 3.5 cm) would not overlap with the AR marker when it grips the piece while still gripping close to the piece's center of mass.
+However, since the rasterized AR marker is an uneven surface, it was hard for the suction gripper to get a good seal if it was overlapping the AR marker. Therefore, we had to place the red dots such that the suction gripper (diameter 3.5 cm) would not overlap with the AR marker when it grips the piece, while still gripping close to the piece's center of mass.
 
 # Task implementation
 To complete its task, we have the Baxter robot:
