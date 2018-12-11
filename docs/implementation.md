@@ -14,12 +14,14 @@ The picture above shows each piece and which AR marker is rasterized on it and w
 To complete its task, we have the Baxter robot:
 <ol>
      <li>
-          <b>Figure out which Tetris pieces it's working with and compute a Tetris solution.</b>
-          <ul>
-               <li> We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution. </li>
-               <li> We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. </li>
-               <li> The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps. </li>
-          </ul>
+          <p>
+               <b>Figure out which Tetris pieces it's working with and compute a Tetris solution.</b>
+               <ul>
+                    <li> We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution. </li>
+                    <li> We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. </li>
+                    <li> The solver itself uses an algorithm (designed by Caleb Begly of MIT) which iterates over each piece and its possible rotations to find a feasible way to place it on the board (a matrix) such that there are no gaps. </li>
+               </ul>
+          </p>
      </li>
      <li>
           <b>From the solution, choose a piece to execute pick-and-place.</b>
@@ -48,3 +50,4 @@ To complete its task, we have the Baxter robot:
           <b>Repeat from step 2 until all pieces in solution have been placed.</b>
      </li>
 </ol>
+<br/><br/><br/>
