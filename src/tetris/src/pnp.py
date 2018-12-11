@@ -4,7 +4,7 @@ pnp -- Module for performing pick-and-place tasks.
 
 from __future__ import division, generators, print_function
 import numpy as np
-from baxter_interface import Gripper, AnalogIO
+from baxter_interface import Gripper, AnalogIO, Limb
 import rospy
 from env import log_pose, add_transform_offset, convert_pose, PNPEnvironment
 from planner import PathPlanner
@@ -25,10 +25,25 @@ class SuctionPNPTask:
 
     def __init__(self, frame_id='base', gripper_side='right'):
         self.gripper_side = gripper_side
+        self.limb = Limb(gripper_side)
         self.planner = PathPlanner(frame_id, gripper_side + '_arm')
         self.calibrate_gripper()
         if rospy.get_param('verbose'):
             rospy.loginfo('Initialized PNP task.')
+
+    def set_joint_angles(self, angles, tolerance=0.05, max_steps=1000, period=0.01):
+        all_angles = dict(angles)
+        for name in self.limb.joint_names():
+            if name not in all_angles:
+                all_angles[name] = self.limb.join_angle(name)
+        step = 0
+        done = lambda: all(abs(angle - self.limb.joint_angle(name)) < tolerance
+                           for name, angle in all_angles.items())
+        while step < max_steps and not done():
+            self.limb.set_joint_positions(all_angles)
+            rospy.sleep(period)
+            step += 1
+        return done()
 
     def is_grasping(self, threshold=50):
         """
@@ -83,13 +98,17 @@ class TetrisPNPTask(SuctionPNPTask):
     """
     A representation of the Tetris pick-and-place task.
     """
-    DOWNWARDS = np.array([0, -1, 0, 0])
-
     def __init__(self, frame_id='base', gripper_side='right'):
         SuctionPNPTask.__init__(self, frame_id, gripper_side)
         self.env = PNPEnvironment(frame_id=frame_id)
 
-    def grasp(self, position, orientation=None):
+    def search(self):
+        angles = self.env.ARM_JOINTS_NEUTRAL[self.gripper_side]
+        angles = {self.gripper_side + '_' + name: angle
+                  for name, angle in zip(self.env.JOINT_NAMES, angles)}
+        self.set_joint_angles(angles)
+
+    def grasp(self, position):
         z_offset, z_delta = rospy.get_param('z_offset'), rospy.get_param('z_delta')
         z_max_steps = rospy.get_param('z_max_steps')
 
@@ -97,18 +116,18 @@ class TetrisPNPTask(SuctionPNPTask):
         current_pos[2] += z_offset
         steps = 0
         while not rospy.is_shutdown() and steps < z_max_steps:
-            # try:
-            self.planner.move_to_pose(current_pos, orientation)
-            # except Exception as exc:
-            #     rospy.logerr(exc)
-            #     break
+            try:
+                self.planner.move_to_pose(current_pos, self.env.DOWNWARDS)
+            except Exception as exc:
+                rospy.logerr(exc)
+                break
             self.close_gripper()
             if not self.is_grasping():
                 self.open_gripper()
                 current_pos[2] -= z_delta
             else:
                 self.env.table_height = current_pos[2] - rospy.get_param('board_thickness')
-                log_pose('Grasped object.', position, orientation)
+                log_pose('Grasped object.', position)
                 return True
             steps += 1
         if rospy.get_param('verbose'):
@@ -119,9 +138,8 @@ class TetrisPNPTask(SuctionPNPTask):
         assert not self.is_grasping()
         center_pos, center_orien = self.env.find_tile_center(tile_name)
         rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
-        center_pos[2] += 0.02
-        self.planner.move_to_pose(center_pos, self.DOWNWARDS)
-        # return self.grasp(center_pos, center_orien)
+        # self.planner.move_to_pose(center_pos, self.env.DOWNWARDS)
+        return self.grasp(center_pos)
 
     def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
@@ -142,7 +160,7 @@ class TetrisPNPTask(SuctionPNPTask):
 
         self.elevate(lift + 2*thickness)
         # Remain downwards
-        constraint = self.planner.make_orientation_constraint(self.DOWNWARDS,
+        constraint = self.planner.make_orientation_constraint(self.env.DOWNWARDS,
                                                               self.env.tool_frame_id)
         position, orientation = self.env.find_slot_transform(tile)
         self.planner.move_to_pose_with_planner(position, orientation, [constraint])

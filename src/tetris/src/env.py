@@ -80,10 +80,21 @@ class PNPEnvironment(Environment):
         [1, 0, 0, 0],
         [1/2**0.5, -1/2**0.5, 0, 0],
     ])
+    JOINT_NAMES = ['e0', 'e1', 's0', 's1', 'w0', 'w1', 'w2']
+    ARM_JOINTS_NEUTRAL = {
+        'left': np.array([-0.3762, 2.1852, 1.05500, -1.2966, 0.1848, 0.8326, 3.0158]),
+        'right': np.array([0.2462, 2.2837, -0.8932, -1.3395, -3.0461, -0.5963, 2.9602]),
+    }
+    CAMERA_POSITIONS = np.array([
+        [0.577, -0.108, 0.080],  # Board bottom left
+        [0.638, 0.413, 0.183],  # Board top left
+        [0.423, 0.600, 0.117],  # Board top right
+        [0.250, 0.496, 0.204],  # Board bottom right
+    ])
 
-    def __init__(self, queue_size=5, table_height=np.nan, frame_id='base',
+    def __init__(self, table_height=np.nan, frame_id='base',
                  tool_frame_id='right_gripper'):
-        Environment.__init__(self, queue_size=queue_size)
+        Environment.__init__(self)
         self.table_height = table_height
         self.frame_id, self.tool_frame_id = frame_id, tool_frame_id
 

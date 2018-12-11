@@ -1,6 +1,6 @@
 <launch>
   <arg name="camera_side" default="left" />
-  <arg name="marker_size" default="6" />
+  <arg name="marker_size" default="5.8" />
   <arg name="max_new_marker_error" default="0.15" />
   <arg name="max_track_error" default="0.3" />
   <arg name="cam_image_topic" default="/cameras/$(arg camera_side)_hand_camera/image" />

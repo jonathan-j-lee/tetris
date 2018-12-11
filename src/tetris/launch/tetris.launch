@@ -27,8 +27,8 @@
   <param name="init_delay" value="5" />
 
   <!-- Camera -->
-  <include file="$(find tetris)/launch/ar_tracking.launch />
-  <param name="tile_size" value="$(arg marker_size)" />
+  <include file="$(find tetris)/launch/ar_tracking.launch" />
+  <param name="tile_size" value="5.8" />
 
   <!-- MoveIt planner -->
   <node name="joint_trajectory_action_server" pkg="baxter_interface"
