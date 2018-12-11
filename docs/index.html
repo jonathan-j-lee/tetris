@@ -19,6 +19,21 @@ layout: base
 </div>
 <div class="col-12 float-left py-4">
   <p>
-    We use a Baxter robot to solve a puzzle inspired by the
+    We use a Baxter robot to solve a puzzle inspired by the classic computer game of tetris.
+    While using the same pieces, the robot's goal is to solve a puzzle in which all tetris pieces fill the frame without spaces.
+  </p>
+  <p>
+    This project demonstrates Baxter's use of computer vision, path planning, sensing, and actuation to complete the task of moving components between two places in a two dimensional plane. 
+    We believe that this task is particularly interesting because of the different shaped pieces adding a level of complexity as well as the increasing difficulty to place each piece on the board as the margin of allowed error becomes smaller.
+  </p>
+  <p>
+    Some of the challenges we encountered:
+  </p>
+  <p>
+    <ul>
+      <li>The location of the AR tags on the pieces are not very accurate so picking them up and placing them down in the correct location was very difficult</li>
+      <li>Because the suction gripper is not rigid, the pieces have to be picked up at their center of mass in order to keep them horizontal while they are moving to the final location</li>
+      <li>While moving to its desired location, the arm would occasionally knock the piece it was trying to pick up out of the way or hit the piece it was carrying against the table or frame</li>
+    </ul>
   </p>
 </div>
