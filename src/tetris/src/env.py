@@ -80,6 +80,7 @@ class PNPEnvironment(Environment):
         [1, 0, 0, 0],
         [1/2**0.5, -1/2**0.5, 0, 0],
     ])
+    UPWARDS = np.array([0, 0, 0, 1])
     DOWNWARDS = np.array([0, -1, 0, 0])
     JOINT_NAMES = ['e0', 'e1', 's0', 's1', 'w0', 'w1', 'w2']
     NEUTRAL_POSITIONS = {
@@ -87,17 +88,19 @@ class PNPEnvironment(Environment):
         'right': np.array([0.132, -0.708, 0.209]),
     }
     SEARCH_POSITIONS = np.array([
-        [0.471, 0.313, 0.207],  # Board bottom left
-        [0.755, 0.149, 0.228],  # Board top left
-        [0.677, -0.127, 0.130],  # Board top right
-        [0.542, -0.354, 0.225],  # Board bottom right
+        [0.471, 0.3, 0.15],  # Board bottom left
+        [0.755, 0.3, 0.0],  # Board top left
+        [0.677, -0.127, 0.0],  # Board top right
+        [0.542, -0.354, 0.15],  # Board bottom right
     ])
+    TABLE_OBSTACLE_NAME = 'table'
 
     def __init__(self, table_height=np.nan, frame_id='base',
                  tool_frame_id='right_gripper'):
         Environment.__init__(self)
         self.table_height = table_height
         self.frame_id, self.tool_frame_id = frame_id, tool_frame_id
+        self.table_placed = False
 
     def get_joint_names(self, side):
         return [side + '_' + name for name in self.JOINT_NAMES]
@@ -108,30 +111,25 @@ class PNPEnvironment(Environment):
     def get_gripper_transform(self):
         return self.get_rel_transform(self.tool_frame_id)
 
-    def find_tile_center(self, tile_name):
-        tile_type = TILE_TYPES[tile_name]
-        trans = self.get_rel_transform(marker_frame(tile_type.marker_id))
-        if trans is None:
-            raise ValueError('Unable to obtain transform.')
+    def find_tile_center(self, tile_type, trans):
         rot = trans.transform.rotation
         _, _, e_z = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
-        rospy.loginfo(str(trans.transform.translation))
         rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, 0, e_z)
         offset = add_transform_offset(trans, [tile_type.x_offset, tile_type.y_offset, 0])
         return convert_pose(offset)
 
-    def find_table(self):
-        corners = ['board_top_left_marker', 'board_top_right_marker',
-                   'board_bottom_right_marker', 'board_bottom_left_marker']
-        offsets = [(0, 0), (-54, 0), (-54, 42), (0, 42)]
-        for corner, (x_offset, y_offset) in zip(corners, offsets):
-            marker = marker_frame(rospy.get_param(corner))
-            trans = self.get_rel_transform(marker)
-            if trans:
-                return trans, x_offset, y_offset
-        raise ValueError('Unable to find any board markers.')
+    def place_table(self, planner, trans):
+        x_offset = -(rospy.get_param('board_width') + 1)/2*rospy.get_param('tile_size')
+        y_offset = -(rospy.get_param('board_height') + 1)/2*rospy.get_param('tile_size')
+        z_offset = -2*rospy.get_param('board_thickness') - rospy.get_param('table_thickness')/2
+        pose = add_transform_offset(trans, np.array([x_offset, y_offset, z_offset]))
+        com, _ = convert_pose(pose)
+        dimensions = np.array([-3*x_offset, -3*y_offset, rospy.get_param('table_thickness')])
+        planner.add_box_obstacle(dimensions, self.TABLE_OBSTACLE_NAME, com, self.UPWARDS)
+        self.table_placed = True
 
     def find_slot_transform(self, tile):
+        raise NotImplementedError
         tile_size = rospy.get_param('tile_size')
         corner, x_offset, y_offset = self.find_table()
         tile_type = TILE_TYPES[tile.tile_name]

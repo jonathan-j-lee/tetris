@@ -6,8 +6,9 @@ from __future__ import division, generators, print_function
 import numpy as np
 from baxter_interface import Gripper, AnalogIO, Limb
 import rospy
-from env import log_pose, add_transform_offset, convert_pose, PNPEnvironment
+from env import log_pose, marker_frame, add_transform_offset, convert_pose, PNPEnvironment
 from planner import PathPlanner
+from solver import TILE_TYPES
 from tf.transformations import euler_from_quaternion
 
 
@@ -105,16 +106,31 @@ class TetrisPNPTask(SuctionPNPTask):
         SuctionPNPTask.__init__(self, frame_id, gripper_side)
         self.env = PNPEnvironment(frame_id=frame_id)
 
-    def search(self):
+    def search(self, frames, delay=1):
+        # TODO: try to get multiple transforms to get a better estimate
         self.gripper_planner.move_to_pose(
             self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)
-
+        frame_transforms, missing_frames = {}, []
         for position in self.env.SEARCH_POSITIONS:
             self.camera_planner.move_to_pose_with_planner(position, self.env.DOWNWARDS)
-            rospy.sleep(2)  # TODO: remove
+            rospy.sleep(delay)  # Allow frames to stabilize.
+            for frame in frames:
+                if frame not in frame_transforms:
+                    trans = self.env.get_rel_transform(frame)
+                    if trans is not None:
+                        frame_transforms[frame] = trans
+            if all(frame in frame_transforms for frame in frames):
+                break
+        else:
+            for frame in frames:
+                if frame not in frame_transforms:
+                    missing_frames.append(frame)
+            if rospy.get_param('verbose'):
+                rospy.logwarn('Unable to find some frames: ' + ', '.join(frame))
 
         self.camera_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.camera_side], self.env.DOWNWARDS)
+        return frame_transforms, missing_frames
 
     def grasp(self, position):
         z_offset, z_delta = rospy.get_param('z_offset'), rospy.get_param('z_delta')
@@ -144,10 +160,20 @@ class TetrisPNPTask(SuctionPNPTask):
 
     def pick(self, tile_name):
         assert not self.is_grasping()
-        center_pos, center_orien = self.env.find_tile_center(tile_name)
+        board_id = marker_frame(rospy.get_param('board_top_left_marker'))
+        tile_type = TILE_TYPES[tile_name]
+        tile_id = marker_frame(tile_type.marker_id)
+        frame_transforms, missing_frames = self.search([board_id, tile_id])
+        if missing_frames:
+            raise ValueError('Unable to find all transforms. Retry.')
+        if not self.env.table_placed:
+            self.env.place_table(self.planner, frame_transforms[board_id])
+        center_pos, center_orien = self.env.find_tile_center(tile_type,
+                                                             frame_transforms[tile_id])
+
         rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
-        # self.gripper_planner.move_to_pose(center_pos, self.env.DOWNWARDS)
-        return self.grasp(center_pos)
+        self.gripper_planner.move_to_pose(center_pos + np.array([0, 0, 0.2]), self.env.DOWNWARDS)
+        # return self.grasp(center_pos)
 
     def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
