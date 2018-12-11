@@ -3,14 +3,14 @@ about: implementation
 ---
 <!--(a) Describe any hardware you used or built. Illustrate with pictures and diagrams. (b) What parts did you use to build your solution? (c) Describe any software you wrote in detail. Illustrate with diagrams, flow charts, and/or other appropriate visuals. This includes launch files, URDFs, etc. (d) How does your complete system work? Describe each step.-->
 
-### Fabrication of parts
+## Fabrication of parts
 We used the laser cutters (makerspace at Jacobs Institute for Design Innovation) to cut our own Tetris pieces and a board to place them from 1/4-inch thick plywood. The Tetris pieces are so-called because each piece is some union of 4 square blocks. Each square block is 2.5 x 2.5 inches (~6 x 6 cm) and the board can fit 6 x 8 of these blocks. We refer to the 7 unique pieces as the Square, Line, S, Z, Reverse L, T, and L pieces. 
 
 ![Pieces with AR + CoM]({{ site.baseurl }}/assets/images/completed-puzzle.png) <!--change this-->
 
 The picture above shows each piece and which AR marker is rasterized on it and where (black dot), as well as where we tell our pick-and-place code to pick up the piece (red dot) using a suction gripper. We want this red dot to be as close to the center of mass of the piece as possible, which we can generally locate using the symmetry of the pieces. This is desirable for stability of the piece during pick-and-place, allowing for easier placement (it's a tight fit on the board). However, since the rasterized AR marker is an uneven surface, it was hard for the suction gripper to get a good seal if it was overlapping the AR marker. Therefore, we had to place the red dots such that the suction gripper (diameter 3.5 cm) would not overlap with the AR marker when it grips the piece while still gripping close enough to the piece's center of mass.
 
-### Task implementation
+## Task implementation
 To complete its task, we have the Baxter robot:
 1) __Figure out which Tetris pieces it's working with and compute a Tetris solution__. 
      - We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution.    
@@ -27,3 +27,4 @@ To complete its task, we have the Baxter robot:
      - We find the location of the top left corner of the board using an AR marker bundle. This bundle specifies that the 4 AR markers on the board are attached to a single rigid body. Detecting any of the 4 markers should give us the location of the "master" marker (i.e. the top left marker on the board). The `ar_track_alvar` package has a node `findMarkerBundles` that takes in an XML file specifying the bundle and publishes the master marker transform. 
      - We have the left-hand camera do a sweep over the board to maximize its chances of detecting one of the bundle markers and thus locating the top left corner of the board. From the solution computed in step 1, we know where the piece needs to go with respect to the board using the dimensions of pieces, the final rotation of the piece, and red dot offsets. We then transform this pose to the Baxter's base frame, then plan and execute a path there for the gripper. 
      - We first move the gripper to location safely above the board and then slowly lower it to the height of the board (table height + 1/4 inch board thickness). We finally release the suction gripper, dropping the piece into place.
+5) __Repeat from step 2 until all pieces in solution have been placed__.
