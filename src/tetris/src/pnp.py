@@ -8,6 +8,7 @@ from baxter_interface import Gripper, AnalogIO
 import rospy
 from env import log_pose, add_transform_offset, convert_pose, PNPEnvironment
 from planner import PathPlanner
+from tf.transformations import euler_from_quaternion
 
 
 class SuctionPNPTask:
@@ -82,6 +83,8 @@ class TetrisPNPTask(SuctionPNPTask):
     """
     A representation of the Tetris pick-and-place task.
     """
+    DOWNWARDS = np.array([0, -1, 0, 0])
+
     def __init__(self, frame_id='base', gripper_side='right'):
         SuctionPNPTask.__init__(self, frame_id, gripper_side)
         self.env = PNPEnvironment(frame_id=frame_id)
@@ -116,7 +119,9 @@ class TetrisPNPTask(SuctionPNPTask):
         assert not self.is_grasping()
         center_pos, center_orien = self.env.find_tile_center(tile_name)
         rospy.loginfo(str(center_pos) + ' ' + str(center_orien))
-        return self.grasp(center_pos, center_orien)
+        center_pos[2] += 0.02
+        self.planner.move_to_pose(center_pos, self.DOWNWARDS)
+        # return self.grasp(center_pos, center_orien)
 
     def elevate(self, z_offset):
         trans = self.env.get_gripper_transform()
@@ -137,7 +142,7 @@ class TetrisPNPTask(SuctionPNPTask):
 
         self.elevate(lift + 2*thickness)
         # Remain downwards
-        constraint = self.planner.make_orientation_constraint(np.array([0, -1, 0, 0]),
+        constraint = self.planner.make_orientation_constraint(self.DOWNWARDS,
                                                               self.env.tool_frame_id)
         position, orientation = self.env.find_slot_transform(tile)
         self.planner.move_to_pose_with_planner(position, orientation, [constraint])

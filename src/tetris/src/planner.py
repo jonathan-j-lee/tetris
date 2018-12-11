@@ -56,7 +56,8 @@ class PathPlanner:
             rospy.loginfo('Initialized path planner.')
 
     def shutdown(self):
-        """ Stop the path planner. """
+        """ Stop the path planner safely. """
+        group.stop()
         del self.group
         if rospy.get_param('verbose'):
             rospy.logwarn('Terminated path planner.')
@@ -77,7 +78,9 @@ class PathPlanner:
             self.group.set_pose_target(create_pose(self.frame_id, position, orientation))
         if rospy.get_param('verbose'):
             log_pose('Moving to pose.', position, orientation)
-        self.group.go()
+        self.group.go(wait=True)
+        self.group.stop()
+        self.clear_pose_targets()
 
     def move_to_pose_with_planner(self, position, orientation=None, orientation_constraints=None):
         """

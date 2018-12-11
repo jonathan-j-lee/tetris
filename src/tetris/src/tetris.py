@@ -74,7 +74,7 @@ def main():
     rospy.init_node('tetris')
     # Wait for other nodes to come online.
     rospy.sleep(rospy.get_param('init_delay'))
-    set_joint_angles(Limb('left'), INIT_LEFT_ARM_JOINTS)
+    # set_joint_angles(Limb('left'), INIT_LEFT_ARM_JOINTS)
     rospack = rospkg.RosPack()
     solution, i = solve_puzzle_optimized(), 0
     task = TetrisPNPTask()
@@ -84,20 +84,20 @@ def main():
         tile = solution[i]
         prompt = '(Please provide a {} tile. Press enter when done.) '
 
-        # try:
         path = os.path.join(rospack.get_path('tetris'),
                                 'data/{}.png'.format(tile.tile_name))
         send_image(img_pub, path)
         raw_input(prompt.format(tile.tile_name.upper()))
-        task.pick(tile.tile_name)
-        task.place(tile)
-        # except Exception as exc:
-        #     # Retry the current piece in the event of an error
-        #     rospy.logerr(type(exc).__name__ + ': ' + str(exc))
-        #     continue
-        #     raise exc
-        # else:
-        i += 1
+        try:
+            task.pick(tile.tile_name)
+            task.open_gripper()
+            # task.place(tile)
+        except Exception as exc:
+            # Retry the current piece in the event of an error
+            rospy.logerr(type(exc).__name__ + ': ' + str(exc))
+            continue
+        else:
+            i += 1
 
 
 if __name__ == '__main__':

@@ -36,7 +36,7 @@ def convert_pose(pose):
 
 def log_pose(msg, position, orientation=None):
     """ Logs the given pose. """
-    if orientation is not None:
+    if orientation is None:
         rospy.loginfo('{} (x={}, y={}, z={})'.format(msg, *position))
     else:
         template = '{} (x={}, y={}, z={}, o_x={}, o_y={}, o_z={}, o_w={})'
@@ -53,13 +53,14 @@ def add_transform_offset(trans, translation):
 
 
 class Environment:
-    def __init__(self, queue_size=5):
+    def __init__(self):
         self.buffer = Buffer()
         self.listener = TransformListener(self.buffer)
 
-    def get_transform(self, target_frame, source_frame, timeout=5):
+    def get_transform(self, source_frame, target_frame, timeout=5):
+        frames = '"{}" w.r.t. "{}"'.format(source_frame, target_frame)
         if rospy.get_param('verbose'):
-            rospy.loginfo('Acquiring transform: {} -> {}'.format(source_frame, target_frame))
+            rospy.loginfo('Acquiring transform: ' + frames)
         start = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time() - start < timeout:
             try:
@@ -68,8 +69,7 @@ class Environment:
             except TransformException:
                 pass
         if rospy.get_param('verbose'):
-            template = 'Failed to find transform: "{}" -> "{}"'
-            rospy.logwarn(template.format(source_frame, target_frame))
+            rospy.logwarn('Failed to find transform: ' + frames)
 
 
 class PNPEnvironment(Environment):
