@@ -16,7 +16,7 @@ To complete its task, we have the Baxter robot:
 <ol>
      <li>
           <p>
-               <b>Figure out which Tetris pieces it's working with and compute a Tetris solution.</b>
+               <b>Figure out which Tetris pieces it's working with and compute a Tetris solution</b>
                <ul>
                     <li> We input the 7 types of pieces along with how many of each we're using and the size of the board (in block units) into a Tetris solver which outputs a complete board solution. </li>
                     <li> We define each piece as an instance of a Tile object. We specify its shape using a matrix of 0's and 1's. Each piece also contains information about its AR marker id, its name, the unique rotations for the piece, and the offset from the center of the AR marker on the piece to the red dot (as drawn above) in meters. </li>
@@ -25,14 +25,14 @@ To complete its task, we have the Baxter robot:
           </p>
      </li>
      <li>
-          <b>From the solution, choose a piece to execute pick-and-place.</b>
+          <b>From the solution, choose a piece to execute pick-and-place</b>
           <ul>
                <li>We have the solver output the locations of each piece in the solved puzzle in row-major order. We also want pick-and-place to execute in row major order so that we can more easily enforce a tight fit on the board (i.e. rather than first placing a piece in the middle of the board, instead place a piece that belongs in one of the corners and align it with the board frame).</li>
                <li>Therefore, we simply choose the next piece in row major order as given by the solution. The code will request the user for the selected piece type. The user will place the requested piece so that the left-hand camera can see it and the right hand can grip it.</li>
           </ul>
      </li>
      <li>
-          <b>Pick up the chosen piece at its red dot.</b>
+          <b>Pick up the chosen piece at its red dot</b>
           <ul>
                <li>We first have Baxter locate the piece's AR marker. From the dimensions of the piece and the red dot offsets, we can compute the location of the red dot in the AR marker's frame. Note that since the AR marker's frame also specifies an orientation with respect to the base, the red dot coordinates also include an orientation. This means that the gripper will always pick up a given piece in the same orientation and position.</li>
                <li>We then use `tf2` to transform the red dot coordinates to Baxter's base frame and direct the right gripper to plan a path to that pose (position + orientation) that doesn't hit the table (which is added as a box obstacle manually). We then execute the plan and activate the vacuum gripper.</li>
@@ -48,7 +48,7 @@ To complete its task, we have the Baxter robot:
           </ul>
      </li>
      <li>
-          <b>Repeat from step 2 until all pieces in solution have been placed.</b>
+          <b>Repeat from step 2 until all pieces in solution have been placed</b>
      </li>
 </ol>
 <br/><br/><br/>
