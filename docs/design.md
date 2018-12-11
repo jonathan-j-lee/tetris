@@ -2,9 +2,6 @@
 title: Design
 about: design
 ---
-
-![Completed puzzle]({{ site.baseurl }}/assets/images/completed-puzzle.png)
-
 # Design Criteria 
 In order to complete this task the robot had to:
 * Identify which tetris piece is placed on the table
@@ -24,6 +21,5 @@ We originally chose not to use AR tags because the very specified and geometric 
 # Robustness, Durability, and Efficiency of Design
 The action of moving the gripper some margin above the object and using the built in sensor to determine whether the suction gripper has grasped the object greatly reduces the negative effects of error in the z direction. Sanding down the edges of the pieces gives the gripper a larger margin of allowed error in the x and y directions by letting the pieces slip more easily into its cut out hole on the board. 
 
-
-
+<br/><br/><br/>
 
