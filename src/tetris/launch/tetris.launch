@@ -19,13 +19,14 @@
 
   <!-- Pick-and-place parameters -->
   <param name="gripper_side" value="right" />
-  <param name="z_offset" value="0.005" />
+  <param name="z_offset" value="0.01" />
   <param name="z_max_steps" value="100" />
   <param name="z_delta" value="0.001" />
   <param name="lift_offset" value="0.05" />
   <param name="drop_offset" value="0.001" />
   <param name="verbose" value="true" />
   <param name="init_delay" value="5" />
+  <param name="grasp_enabled" value="true" />
 
   <!-- Camera -->
   <include file="$(find tetris)/launch/ar_tracking.launch" />

@@ -47,7 +47,9 @@ def marker_frame(marker_id):
     return 'ar_marker_{}'.format(marker_id)
 
 
-def add_transform_offset(trans, translation):
+def add_transform_offset(trans, translation=None):
+    if translation is None:
+        translation = np.zeros(3)
     offset = create_pose(trans.child_frame_id, translation)
     return do_transform_pose(offset, trans)
 
@@ -57,14 +59,14 @@ class Environment:
         self.buffer = Buffer()
         self.listener = TransformListener(self.buffer)
 
-    def get_transform(self, source_frame, target_frame, timeout=5):
-        frames = '"{}" w.r.t. "{}"'.format(source_frame, target_frame)
+    def get_transform(self, source_frame, target_frame, timeout=3):
+        frames = '"{}" w.r.t. "{}"'.format(target_frame, source_frame)
         if rospy.get_param('verbose'):
             rospy.loginfo('Acquiring transform: ' + frames)
         start = rospy.get_time()
         while not rospy.is_shutdown() and rospy.get_time() - start < timeout:
             try:
-                return self.buffer.lookup_transform(target_frame, source_frame,
+                return self.buffer.lookup_transform(source_frame, target_frame,
                                                     rospy.Time())
             except TransformException:
                 pass
@@ -88,10 +90,10 @@ class PNPEnvironment(Environment):
         'right': np.array([0.132, -0.708, 0.209]),
     }
     SEARCH_POSITIONS = np.array([
-        [0.471, 0.3, 0.15],  # Board bottom left
+        [0.471, 0.3, 0.1],  # Board bottom left
         [0.755, 0.3, 0.0],  # Board top left
         [0.677, -0.127, 0.0],  # Board top right
-        [0.542, -0.354, 0.15],  # Board bottom right
+        [0.542, -0.354, 0.0],  # Board bottom right
     ])
     TABLE_OBSTACLE_NAME = 'table'
 
@@ -106,7 +108,7 @@ class PNPEnvironment(Environment):
         return [side + '_' + name for name in self.JOINT_NAMES]
 
     def get_rel_transform(self, frame):
-        return self.get_transform(frame, self.frame_id)
+        return self.get_transform(self.frame_id, frame)
 
     def get_gripper_transform(self):
         return self.get_rel_transform(self.tool_frame_id)
@@ -114,19 +116,22 @@ class PNPEnvironment(Environment):
     def find_tile_center(self, tile_type, trans):
         rot = trans.transform.rotation
         _, _, e_z = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
-        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, 0, e_z)
+        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, np.pi, e_z)
         offset = add_transform_offset(trans, [tile_type.x_offset, tile_type.y_offset, 0])
         return convert_pose(offset)
 
     def place_table(self, planner, trans):
-        x_offset = -(rospy.get_param('board_width') + 1)/2*rospy.get_param('tile_size')
-        y_offset = -(rospy.get_param('board_height') + 1)/2*rospy.get_param('tile_size')
+        # Offsets are in meters
+        x_offset = (rospy.get_param('board_height') + 1)/2*rospy.get_param('tile_size')/100
+        y_offset = -(rospy.get_param('board_width') + 1)/2*rospy.get_param('tile_size')/100
         z_offset = -2*rospy.get_param('board_thickness') - rospy.get_param('table_thickness')/2
         pose = add_transform_offset(trans, np.array([x_offset, y_offset, z_offset]))
-        com, _ = convert_pose(pose)
-        dimensions = np.array([-3*x_offset, -3*y_offset, rospy.get_param('table_thickness')])
-        planner.add_box_obstacle(dimensions, self.TABLE_OBSTACLE_NAME, com, self.UPWARDS)
+        center_pos, center_orien = convert_pose(pose)
+        dimensions = np.array([-4*x_offset, -4*y_offset, rospy.get_param('table_thickness')])
+        planner.add_box_obstacle(dimensions, self.TABLE_OBSTACLE_NAME, center_pos, self.UPWARDS)
         self.table_placed = True
+        if rospy.get_param('verbose'):
+            log_pose('Placed table.', center_pos, center_orien)
 
     def find_slot_transform(self, tile):
         raise NotImplementedError
