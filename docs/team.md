@@ -3,9 +3,9 @@ title: Team
 about: team
 ---
 
-| **James Fang**  | **Miyuki Weldon**                                                    | **Jonathan Lee** |
-| --------------- | -------------------------------------------------------------------- | ---------------- |
-| Add picture     | ![Miyuki Weldon]({{ site.baseurl }}/assets/images/Miyuki_Weldon.jpg) | Add picture      |
+| **James Fang** | **Miyuki Weldon** | **Jonathan Lee** |
+| ----- | ------- | ------- |
+| Add picture | ![Miyuki Weldon]({{ site.baseurl }}/assets/images/Miyuki_Weldon.jpg) | Add picture |
 
 
 ## James Fang: 
