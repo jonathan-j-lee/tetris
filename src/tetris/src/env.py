@@ -86,16 +86,16 @@ class PNPEnvironment(Environment):
     DOWNWARDS = np.array([0, -1, 0, 0])
     JOINT_NAMES = ['e0', 'e1', 's0', 's1', 'w0', 'w1', 'w2']
     NEUTRAL_POSITIONS = {
-        'left': np.array([0.094, 0.754, 0.060]),
-        'right': np.array([0.132, -0.708, 0.209]),
+        'left': np.array([0.1, 0.75, 0.1]),
+        'right': np.array([0.1, -0.75, 0.1]),
     }
 
     SEARCH_HEIGHT = rospy.get_param('search_height')
     SEARCH_POSITIONS = np.array([
         # [0.471, 0.3, SEARCH_HEIGHT],  # Board bottom left
-        # [0.755, 0.3, SEARCH_HEIGHT],  # Board top left
-        [0.75, -0.15, SEARCH_HEIGHT],  # Board top right
-        [0.45, -0.35, SEARCH_HEIGHT - 0.1],  # Board bottom right
+        [0.75, 0.3, SEARCH_HEIGHT],  # Board top left
+        # [0.75, -0.15, SEARCH_HEIGHT],  # Board top right
+        [0.45, -0.4, SEARCH_HEIGHT],  # Board bottom right
     ])
     TABLE_OBSTACLE_NAME = 'table'
 
@@ -124,8 +124,9 @@ class PNPEnvironment(Environment):
 
     def place_table(self, planner, trans):
         # Offsets are in meters
-        x_offset = (rospy.get_param('board_height') + 1)/2*rospy.get_param('tile_size')/100
-        y_offset = -(rospy.get_param('board_width') + 1)/2*rospy.get_param('tile_size')/100
+        tile_size = rospy.get_param('tile_size')
+        x_offset = (rospy.get_param('board_height') + 1)/2*tile_size/100
+        y_offset = -(rospy.get_param('board_width') + 1)/2*tile_size/100
         z_offset = -2*rospy.get_param('board_thickness') - rospy.get_param('table_thickness')/2
         pose = add_transform_offset(trans, np.array([x_offset, y_offset, z_offset]))
         center_pos, center_orien = convert_pose(pose)
@@ -135,32 +136,36 @@ class PNPEnvironment(Environment):
         if rospy.get_param('verbose'):
             log_pose('Placed table.', center_pos, center_orien)
 
+    def find_ar_tag_position(self, pattern):
+        rows, columns = pattern.shape
+        for row in range(rows):
+            for column in range(columns):
+                if pattern[row, column] == AR_TAG:
+                    return row, column
+        raise ValueError('AR tag not found in pattern.')
+
     def find_slot_transform(self, tile, table_trans, z_pos):
         tile_size = rospy.get_param('tile_size')
         tile_type = TILE_TYPES[tile.tile_name]
         pattern = rotate(tile_type.pattern, tile.rotations)
-        for row in range(pattern.shape[0]):
-            for column in range(pattern.shape[1]):
-                if pattern[row, column] == AR_TAG:
-                    break
-        else:
-            raise ValueError('AR tag not found in pattern.')
+        row, column = self.find_ar_tag_position(pattern)
+        rospy.loginfo('Relative AR tag position: ({}, {})'.format(row, column))
 
         row, column = row + tile.row, column + tile.column
-        x_offset += column*tile_size
-        y_offset -= row*tile_size
+        x_offset = (column + 1)*tile_size
+        y_offset = -(row + 1)*tile_size
         # TODO: refactor
-        if rotations == 0:
+        if tile.rotations == 0:
             x_offset += tile_type.x_offset
             y_offset += tile_type.y_offset
-        elif rotations == 1:
+        elif tile.rotations == 1:
             x_offset += tile_type.y_offset
             y_offset -= tile_type.x_offset
-        elif rotations == 2:
+        elif tile.rotations == 2:
             x_offset -= tile_type.x_offset
             y_offset -= tile_type.y_offset
         else:
             x_offset -= tile_type.y_offset
             y_offset += tile_type.x_offset
-        offset = add_transform_offset(table_trans, np.array([x_offset, y_offset, 0]))
+        offset = add_transform_offset(table_trans, np.array([x_offset/100, y_offset/100, 0]))
         return convert_pose(offset)

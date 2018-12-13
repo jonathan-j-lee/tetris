@@ -6,6 +6,7 @@ tetris -- Solves a Tetris-like puzzle.
 
 from __future__ import division, generators, print_function
 import os
+import traceback
 import cv2
 import cv_bridge
 import rospy
@@ -57,8 +58,6 @@ def main():
         path = os.path.join(rospack.get_path('tetris'),
                                 'data/{}.png'.format(tile.tile_name))
         send_image(img_pub, path)
-        from solver import rotate, TILE_TYPES
-        print(rotate(TILE_TYPES[tile.tile_name].pattern, tile.rotations))
         raw_input(prompt.format(tile.tile_name.upper()))
         try:
             board_trans, tile_trans = task.pick(tile.tile_name)
@@ -66,6 +65,7 @@ def main():
         except Exception as exc:
             # Retry the current piece in the event of an error
             rospy.logerr(type(exc).__name__ + ': ' + str(exc))
+            traceback.print_exc()
             continue
         else:
             i += 1

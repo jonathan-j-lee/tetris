@@ -188,7 +188,7 @@ class TetrisPNPTask(SuctionPNPTask):
         trans = self.env.get_gripper_transform()
         translation = trans.transform.translation
         position = np.array([translation.x, translation.y, translation.z])
-        self.gripper_planner.move_to_pose(position, orientation)
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
 
     def place(self, tile, board_trans, tile_trans):
         if rospy.get_param('grasp_enabled'):
@@ -199,10 +199,11 @@ class TetrisPNPTask(SuctionPNPTask):
         position[2] += lift + 2*thickness
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
 
-        # TODO: test
+        if rospy.get_param('verbose'):
+            rospy.loginfo('Tile: ({}, {}), rotations={}'.format(tile.row, tile.column, tile.rotations))
         orientation = self.env.ROTATIONS[tile.rotations]
         self.rotate_to(orientation)
-        position = self.env.find_slot_transform(tile, board_trans, position[2])
+        position, _ = self.env.find_slot_transform(tile, board_trans, position[2])
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
         position[2] -= lift + thickness
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
