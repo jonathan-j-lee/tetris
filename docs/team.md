@@ -3,6 +3,11 @@ title: Team
 about: team
 ---
 
+| *James Fang*  | *Miyuki Weldon* | *Jonathan Lee* |
+| ------------- | ----------------| -------------- |
+| Add picture   | Add picture     | Add picture    |
+
+
 ## James Fang: 
 Third-year EECS undergrad with interests in AI, ML, and robotics. His contributions to the project included writing the pick-and-place (path planning + suction gripper) functions, intergrating the Tetris puzzle solver, and debugging issues with AR tracking.
 
