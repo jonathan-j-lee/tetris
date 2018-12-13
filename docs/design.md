@@ -8,6 +8,7 @@ In order to complete this task the robot had to:
 * Pick up the piece with a vacuum gripper in a stable manner
 * Compute the piece's solution on the board
 * Place the piece onto its solution location in the correct orientation
+* Don't hit the table or board while moving
 * Have all the pieces fit together flush on the board
 <br/>
 
