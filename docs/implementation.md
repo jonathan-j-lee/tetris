@@ -4,6 +4,11 @@ about: implementation
 ---
 <!--(a) Describe any hardware you used or built. Illustrate with pictures and diagrams. (b) What parts did you use to build your solution? (c) Describe any software you wrote in detail. Illustrate with diagrams, flow charts, and/or other appropriate visuals. This includes launch files, URDFs, etc. (d) How does your complete system work? Describe each step.-->
 
+# Hardware
+| **Baxter** | **Suction Gripper** | **Tetris Pieces** |
+| ----- | ------- | ------- |
+| ![Baxter]({{ site.baseurl }}/assets/images/baxter-front-view.jpg) | ![Suction Gripper]({{ site.baseurl }}/assets/images/Basic_Vacuum_Cup_Gripper.jpg) | ![Tetris Pieces]({{ site.baseurl }}/assets/images/Tetris-Pieces-with-AR-Tags.jpg) |
+
 # Fabrication of parts
 We used laser cutters (in the makerspace at Jacobs Institute for Design Innovation) to cut our own Tetris pieces and a board to place them from 1/4-inch thick plywood. The Tetris pieces are so-called because each piece is some union of 4 square blocks. Each square block is 2.5 x 2.5 inches (~6 x 6 cm) and the board can fit 6 x 8 of these blocks. We refer to the 7 unique pieces as the Square, Line, S, Z, Reverse-L, T, and L pieces. 
 
