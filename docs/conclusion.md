@@ -60,3 +60,5 @@ about: conclusion
 * Use vision without AR markers
 
    This would extend the applicability of our project to pieces without AR markers (i.e. most things in the world). One example would be brick-laying in construction.
+   
+<br/><br/><br/>
