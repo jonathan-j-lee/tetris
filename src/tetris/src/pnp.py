@@ -49,7 +49,7 @@ class SuctionPNPTask:
             step += 1
         return done()
 
-    def is_grasping(self, threshold=50):
+    def is_grasping(self, threshold=80):
         """
         Uses the vacuum sensor to detect whether the suction cup has grasped an
         object. The topics
@@ -79,6 +79,7 @@ class SuctionPNPTask:
         """ Initialize the gripper and its vacuum sensor. """
         self.gripper = Gripper(self.gripper_side)
         self.gripper.calibrate()
+        self.gripper.open()
         self.vacuum_sensor = AnalogIO(self.gripper_side + '_vacuum_sensor_analog')
         if rospy.get_param('verbose'):
             rospy.loginfo('Calibrated gripper. (type={})'.format(self.gripper.type()))
@@ -114,7 +115,7 @@ class TetrisPNPTask(SuctionPNPTask):
 
     def search(self, frames, delay=2):
         # TODO: try to get multiple transforms to get a better estimate
-        self.gripper_planner.move_to_pose(
+        self.gripper_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)
         frame_transforms, missing_frames = {}, []
         for position in self.env.SEARCH_POSITIONS:
@@ -201,10 +202,15 @@ class TetrisPNPTask(SuctionPNPTask):
 
         if rospy.get_param('verbose'):
             rospy.loginfo('Tile: ({}, {}), rotations={}'.format(tile.row, tile.column, tile.rotations))
-        orientation = self.env.ROTATIONS[tile.rotations]
+        rotations = (tile.rotations + 1)%4
+        orientation = self.env.ROTATIONS[rotations]
         self.rotate_to(orientation)
         position, _ = self.env.find_slot_transform(tile, board_trans, position[2])
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
-        position[2] -= lift + thickness
+        position[2] -= lift - rospy.get_param('drop_offset')
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
         self.open_gripper()
+        position[2] += lift + thickness
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
+        self.gripper_planner.move_to_pose_with_planner(
+            self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)

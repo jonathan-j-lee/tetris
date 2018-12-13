@@ -167,5 +167,5 @@ class PNPEnvironment(Environment):
         else:
             x_offset -= tile_type.y_offset
             y_offset += tile_type.x_offset
-        offset = add_transform_offset(table_trans, np.array([x_offset/100, y_offset/100, 0]))
+        offset = add_transform_offset(table_trans, np.array([x_offset/100, y_offset/100, z_pos]))
         return convert_pose(offset)
