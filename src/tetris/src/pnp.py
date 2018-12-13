@@ -108,6 +108,7 @@ class TetrisPNPTask(SuctionPNPTask):
         rospy.on_shutdown(self.shutdown)
 
     def shutdown(self):
+        self.open_gripper()
         if self.env.table_placed:
             self.gripper_planner.remove_obstacle(self.env.TABLE_OBSTACLE_NAME)
 
@@ -131,7 +132,7 @@ class TetrisPNPTask(SuctionPNPTask):
                 if frame not in frame_transforms:
                     missing_frames.append(frame)
             if rospy.get_param('verbose'):
-                rospy.logwarn('Unable to find some frames: ' + ', '.join(frame))
+                rospy.logwarn('Unable to find some frames: ' + ', '.join(missing_frames))
 
         self.camera_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.camera_side], self.env.DOWNWARDS)
@@ -153,7 +154,7 @@ class TetrisPNPTask(SuctionPNPTask):
             if not self.is_grasping():
                 self.open_gripper()
                 current_pos[2] -= z_delta
-                self.elevate(-z_delta)
+                self.gripper_planner.move_to_pose_with_planner(current_pos, orientation)
             else:
                 self.env.table_height = current_pos[2] - rospy.get_param('board_thickness')
                 log_pose('Grasped object.', position)
@@ -181,12 +182,7 @@ class TetrisPNPTask(SuctionPNPTask):
         center_pos, center_orien = self.env.find_tile_center(
             tile_type, frame_transforms[tile_id])
         self.grasp(center_pos, center_orien)
-
-    def elevate(self, z_offset):
-        trans = self.env.get_gripper_transform()
-        offset = np.array([0, 0, z_offset])
-        position, orientation = convert_pose(add_transform_offset(trans, offset))
-        self.gripper_planner.move_to_pose_with_planner(position, orientation)
+        return frame_transforms[board_id], frame_transforms[tile_id]
 
     def rotate_to(self, orientation):
         trans = self.env.get_gripper_transform()
@@ -194,16 +190,20 @@ class TetrisPNPTask(SuctionPNPTask):
         position = np.array([translation.x, translation.y, translation.z])
         self.gripper_planner.move_to_pose(position, orientation)
 
-    def place(self, tile):
+    def place(self, tile, board_trans, tile_trans):
         if rospy.get_param('grasp_enabled'):
             assert self.is_grasping()
         lift = rospy.get_param('lift_offset')
         thickness = rospy.get_param('board_thickness')
-        self.elevate(lift + 2*thickness)
+        position, orientation = convert_pose(add_transform_offset(tile_trans))
+        position[2] += lift + 2*thickness
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
 
         # TODO: test
-        position, orientation = self.env.find_slot_transform(tile)
-        self.gripper_planner.move_to_pose_with_planner(position, orientation, [constraint])
-        self.rotate_to(self.env.ROTATIONS[tile.rotations])
-        self.elevate(-lift - thickness + rospy.get_param('drop_offset'))
+        orientation = self.env.ROTATIONS[tile.rotations]
+        self.rotate_to(orientation)
+        position = self.env.find_slot_transform(tile, board_trans, position[2])
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
+        position[2] -= lift + thickness
+        self.gripper_planner.move_to_pose_with_planner(position, orientation)
         self.open_gripper()

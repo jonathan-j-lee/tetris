@@ -41,10 +41,6 @@ def solve_puzzle_optimized():
     return solution
 
 
-# def add_table_obstacle(task, margin=0.01):
-#     task.planner.add_box_obstacle([1, 1, 0.5], 'table', )
-
-
 def main():
     rospy.init_node('tetris')
     # Wait for other nodes to come online.
@@ -61,12 +57,12 @@ def main():
         path = os.path.join(rospack.get_path('tetris'),
                                 'data/{}.png'.format(tile.tile_name))
         send_image(img_pub, path)
+        from solver import rotate, TILE_TYPES
+        print(rotate(TILE_TYPES[tile.tile_name].pattern, tile.rotations))
         raw_input(prompt.format(tile.tile_name.upper()))
         try:
-            task.pick(tile.tile_name)
-            # task.open_gripper()
-
-            # task.place(tile)
+            board_trans, tile_trans = task.pick(tile.tile_name)
+            task.place(tile, board_trans, tile_trans)
         except Exception as exc:
             # Retry the current piece in the event of an error
             rospy.logerr(type(exc).__name__ + ': ' + str(exc))

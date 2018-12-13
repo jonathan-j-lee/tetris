@@ -38,8 +38,7 @@ TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
 
 TILE_SIZE = rospy.get_param('tile_size')/100
-SQUARE_TILE = TileType(0, 'square', 1, -0.5*TILE_SIZE + 0.01/2**0.5,
-                       -0.5*TILE_SIZE + 0.01/2**0.5, [
+SQUARE_TILE = TileType(0, 'square', 1, 0.8*TILE_SIZE, -0.8*TILE_SIZE, [
     [FLAT, AR_TAG],
     [FLAT, FLAT],
 ])
@@ -94,6 +93,7 @@ def rotate_once(pattern):
     >>> rotate(np.array([[1, 1, 1], [0, 1, 0]], dtype=np.int)).tolist()
     [[0, 1], [1, 1], [0, 1]]
     """
+    pattern = np.array(pattern, dtype=np.int)
     rows, columns = pattern.shape
     rotated_pattern = np.empty((columns, rows), dtype=np.int)
     for i in range(rows):
@@ -105,7 +105,7 @@ def rotate_once(pattern):
 def rotate(pattern, iters=1):
     for _ in range(iters % 4):
         pattern = rotate_once(pattern)
-    return pattern
+    return np.array(pattern, dtype=np.int)
 
 
 def can_place_tile(board, tile_pattern, row, column):

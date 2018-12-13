@@ -8,7 +8,7 @@ import rospy
 from tf2_ros import Buffer, TransformListener, TransformException
 from tf2_geometry_msgs import do_transform_pose
 from geometry_msgs.msg import PoseStamped
-from solver import TILE_TYPES, AR_TAG
+from solver import TILE_TYPES, AR_TAG, rotate
 from tf.transformations import quaternion_from_euler, euler_from_quaternion
 
 
@@ -89,11 +89,13 @@ class PNPEnvironment(Environment):
         'left': np.array([0.094, 0.754, 0.060]),
         'right': np.array([0.132, -0.708, 0.209]),
     }
+
+    SEARCH_HEIGHT = rospy.get_param('search_height')
     SEARCH_POSITIONS = np.array([
-        [0.471, 0.3, 0.1],  # Board bottom left
-        [0.755, 0.3, 0.0],  # Board top left
-        [0.677, -0.127, 0.0],  # Board top right
-        [0.542, -0.354, 0.0],  # Board bottom right
+        # [0.471, 0.3, SEARCH_HEIGHT],  # Board bottom left
+        # [0.755, 0.3, SEARCH_HEIGHT],  # Board top left
+        [0.75, -0.15, SEARCH_HEIGHT],  # Board top right
+        [0.45, -0.35, SEARCH_HEIGHT - 0.1],  # Board bottom right
     ])
     TABLE_OBSTACLE_NAME = 'table'
 
@@ -133,10 +135,8 @@ class PNPEnvironment(Environment):
         if rospy.get_param('verbose'):
             log_pose('Placed table.', center_pos, center_orien)
 
-    def find_slot_transform(self, tile):
-        raise NotImplementedError
+    def find_slot_transform(self, tile, table_trans, z_pos):
         tile_size = rospy.get_param('tile_size')
-        corner, x_offset, y_offset = self.find_table()
         tile_type = TILE_TYPES[tile.tile_name]
         pattern = rotate(tile_type.pattern, tile.rotations)
         for row in range(pattern.shape[0]):
@@ -162,5 +162,5 @@ class PNPEnvironment(Environment):
         else:
             x_offset -= tile_type.y_offset
             y_offset += tile_type.x_offset
-        offset = add_transform_offset(corner, np.array([x_offset, y_offset, 0]))
+        offset = add_transform_offset(table_trans, np.array([x_offset, y_offset, 0]))
         return convert_pose(offset)
