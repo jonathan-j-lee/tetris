@@ -4,11 +4,12 @@ about: design
 ---
 # Design Criteria 
 In order to complete this task the robot had to:
-* Identify which tetris piece is placed on the table
-* Find the correct location and orientation of the piece's initial position
+* Find the correct location and orientation of a piece
 * Pick up the piece with a vacuum gripper in a stable manner
 * Compute the piece's solution on the board
 * Place the piece onto its solution location in the correct orientation
+* Don't hit the table or board while moving
+* Have all the pieces fit together flush on the board
 <br/>
 
 This project will allow us the robot to complete a full game of the tetris puzzle.
