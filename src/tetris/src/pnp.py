@@ -199,35 +199,44 @@ class TetrisPNPTask(SuctionPNPTask):
         position, orientation = convert_pose(add_transform_offset(tile_trans))
         position[2] += lift + 2*thickness
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
-        if rospy.get_param('verbose'):
-            rospy.loginfo('Tile: ({}, {}), rotations={}'.format(tile.row, tile.column, tile.rotations))
 
-        _, _, e_z = euler_from_quaternion(convert_pose(add_transform_offset(board_trans)))
+        _, _, e_z = euler_from_quaternion(convert_pose(add_transform_offset(board_trans))[1])
         orientation = quaternion_from_euler(0, np.pi, -(e_z - tile.rotations*np.pi/2))
+        rospy.loginfo('Euler angle: ' + str(e_z))
 
         tile_size = rospy.get_param('tile_size')
         tile_type = TILE_TYPES[tile.tile_name]
 
-        grasp_to_ar_tag = np.array([-tile_type.x_offset, -tile_type.y_offset, 0])
-        cw_rot = np.array([
-            [0, 1, 0],
-            [-1, 0, 0],
-            [0, 0, 0],
-        ])
-        grasp_to_ar_tag = cw_rot**tile.rotations*grasp_to_ar_tag
+        x, y = -tile_type.x_offset, -tile_type.y_offset
+        if tile.rotations == 1:
+            x, y = y, -x
+        elif tile.rotations == 2:
+            x, y = -x, -y
+        elif tile.rotations == 3:
+            x, y = -y, x
+        grasp_to_ar_tag = np.array([x, y, 0])
+        rospy.loginfo('Grasp to AR tag: ' + str(grasp_to_ar_tag))
 
         rotated_pattern = rotate(tile_type.pattern, tile.rotations)
         for ar_row in range(rotated_pattern.shape[0]):
+            quit = False
             for ar_col in range(rotated_pattern.shape[1]):
                 if rotated_pattern[ar_row, ar_col] == AR_TAG:
+                    quit = True
                     break
-        ar_offset = np.array([(1 + tile.column + ar_col)*tile_size, -(1 + tile.row + ar_row)*tile.size, 0])
-        offset = (ar_offset - grasp_to_ar_tag)/100
+            if quit:
+                break
+        rospy.loginfo('AR tag relative to top left: {}, {}'.format(ar_row, ar_col))
+        ar_offset = np.array([(1 + tile.column + ar_col)*tile_size, -(1 + tile.row + ar_row)*tile_size, 0])
+        rospy.loginfo('AR offset: ' + str(ar_offset))
+        offset = (ar_offset/100 - grasp_to_ar_tag)
+        rospy.loginfo('Offset: ' + str(offset))
 
-        position, _ = convert_pose(add_transform_offset(table_trans, offset))
-        position[2] = self.env.get_gripper_transform().transform.translation.z
-
-        self.gripper_planner.move_to_pose_with_planner(position, orientation)
+        target, _ = convert_pose(add_transform_offset(board_trans, offset))
+        target[2] = position[2]
+        rospy.loginfo('Target: ' + str(np.round(target, 3)))
+        self.gripper_planner.move_to_pose_with_planner(target, orientation)
+        self.open_gripper()
 
         self.gripper_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)

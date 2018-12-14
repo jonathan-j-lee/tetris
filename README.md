@@ -57,3 +57,28 @@ $ cd docs
 $ bundle install
 $ bundle exec jekyll serve
 ```
+
+## Troubleshooting
+
+- Camera field-of-view is too close.
+  Use `resetcameras` to set the resolution to 1280 by 800.
+  Note that you may have to disable the right-hand camera to get a bandwidth boost.
+- Robot is dropping the first tile in the lower right-hand corner.
+  The board is probably oriented incorrectly (tile 8 should be in the top left).
+- The AR tags are failing to be detected.
+  You may have to increase lighting so the light parts of the tags register.
+- Suction is not working.
+  First, ensure the pressurizer is on.
+  Next, the seal on the gripper may be poor.
+  You can check whether this is the case by running:
+  ```sh
+  $ roslaunch tetris baxter_moveit_headless.launch
+  $ rosrun tetris gripper_test.py
+  ```
+  Then, feel the seal around the tube while the gripper is activated.
+  If large amounts of air are moving through the seal, the best fix is to put layers of tape between the tube screw and the socket (not around the seal).
+  The likely cause of the failure is that the screw is bent such that it creates gaps, even when fully screwed in.
+  The tape fills those gaps, since it is somewhat compressible.
+
+If all else fails, you can reboot the robot.
+This has been known to solve numerous issues, like being unable to plan paths that are clearly feasible.

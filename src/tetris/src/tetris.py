@@ -36,12 +36,12 @@ def solve_puzzle_optimized():
     solution = solve_puzzle(rows, columns, tiles)
     assert solution is not None, 'Failed to solve puzzle.'
     solution = optimize_solution(solution)
-    print('\n')
-    display_solution(rows, columns, solution, scale=4, offset=4)
-    print('\n')
-
-    for tile in solution:
-        rospy.loginfo('Tile: (), rotations={}'.format(tile.row, tile.column, tile.rotations))
+    if rospy.get_param('verbose'):
+        print('\n')
+        display_solution(rows, columns, solution, scale=4, offset=4)
+        print('\n')
+        for tile in solution:
+            rospy.loginfo('Tile: ({}, {}), type={}, rotations={}'.format(tile.row, tile.column, tile.tile_name, tile.rotations))
     return solution
 
 
