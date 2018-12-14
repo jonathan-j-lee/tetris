@@ -16,3 +16,5 @@ Third-year Mechanical Engineering undergraduate at UC Berkeley with interests in
 
 ## Jonathan Lee: 
 Third-year EECS undergraduate at UC Berkeley with interests in robotics, artificial intelligence, and computer systems. His contributions to the project included integrating AR tracking, writing the project frontend UI, and refining the pick-and-place algorithm.
+
+<br/><br/><br/>
