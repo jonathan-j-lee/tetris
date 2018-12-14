@@ -8,8 +8,8 @@ from baxter_interface import Gripper, AnalogIO, Limb
 import rospy
 from env import log_pose, marker_frame, add_transform_offset, convert_pose, PNPEnvironment
 from planner import PathPlanner
-from solver import TILE_TYPES
-from tf.transformations import euler_from_quaternion
+from solver import TILE_TYPES, rotate, AR_TAG
+from tf.transformations import euler_from_quaternion, quaternion_from_euler
 
 
 class SuctionPNPTask:
@@ -199,18 +199,35 @@ class TetrisPNPTask(SuctionPNPTask):
         position, orientation = convert_pose(add_transform_offset(tile_trans))
         position[2] += lift + 2*thickness
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
-
         if rospy.get_param('verbose'):
             rospy.loginfo('Tile: ({}, {}), rotations={}'.format(tile.row, tile.column, tile.rotations))
-        rotations = (tile.rotations + 1)%4
-        orientation = self.env.ROTATIONS[rotations]
-        self.rotate_to(orientation)
-        position, _ = self.env.find_slot_transform(tile, board_trans, position[2])
+
+        _, _, e_z = euler_from_quaternion(convert_pose(add_transform_offset(board_trans)))
+        orientation = quaternion_from_euler(0, np.pi, -(e_z - tile.rotations*np.pi/2))
+
+        tile_size = rospy.get_param('tile_size')
+        tile_type = TILE_TYPES[tile.tile_name]
+
+        grasp_to_ar_tag = np.array([-tile_type.x_offset, -tile_type.y_offset, 0])
+        cw_rot = np.array([
+            [0, 1, 0],
+            [-1, 0, 0],
+            [0, 0, 0],
+        ])
+        grasp_to_ar_tag = cw_rot**tile.rotations*grasp_to_ar_tag
+
+        rotated_pattern = rotate(tile_type.pattern, tile.rotations)
+        for ar_row in range(rotated_pattern.shape[0]):
+            for ar_col in range(rotated_pattern.shape[1]):
+                if rotated_pattern[ar_row, ar_col] == AR_TAG:
+                    break
+        ar_offset = np.array([(1 + tile.column + ar_col)*tile_size, -(1 + tile.row + ar_row)*tile.size, 0])
+        offset = (ar_offset - grasp_to_ar_tag)/100
+
+        position, _ = convert_pose(add_transform_offset(table_trans, offset))
+        position[2] = self.env.get_gripper_transform().transform.translation.z
+
         self.gripper_planner.move_to_pose_with_planner(position, orientation)
-        position[2] -= lift - rospy.get_param('drop_offset')
-        self.gripper_planner.move_to_pose_with_planner(position, orientation)
-        self.open_gripper()
-        position[2] += lift + thickness
-        self.gripper_planner.move_to_pose_with_planner(position, orientation)
+
         self.gripper_planner.move_to_pose_with_planner(
             self.env.NEUTRAL_POSITIONS[self.gripper_side], self.env.DOWNWARDS)

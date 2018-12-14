@@ -39,6 +39,9 @@ def solve_puzzle_optimized():
     print('\n')
     display_solution(rows, columns, solution, scale=4, offset=4)
     print('\n')
+
+    for tile in solution:
+        rospy.loginfo('Tile: (), rotations={}'.format(tile.row, tile.column, tile.rotations))
     return solution
 
 

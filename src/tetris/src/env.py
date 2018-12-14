@@ -118,7 +118,7 @@ class PNPEnvironment(Environment):
     def find_tile_center(self, tile_type, trans):
         rot = trans.transform.rotation
         _, _, e_z = euler_from_quaternion([rot.x, rot.y, rot.z, rot.w])
-        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, np.pi, e_z)
+        rot.x, rot.y, rot.z, rot.w = quaternion_from_euler(0, np.pi, -e_z)
         offset = add_transform_offset(trans, [tile_type.x_offset, tile_type.y_offset, 0])
         return convert_pose(offset)
 
@@ -136,7 +136,8 @@ class PNPEnvironment(Environment):
         if rospy.get_param('verbose'):
             log_pose('Placed table.', center_pos, center_orien)
 
-    def find_ar_tag_position(self, pattern):
+    def find_ar_tag_position(self, tile):
+        pattern = np.array(TILE_TYPES[tile.tile_name].pattern, dtype=np.int)
         rows, columns = pattern.shape
         for row in range(rows):
             for column in range(columns):
@@ -146,9 +147,7 @@ class PNPEnvironment(Environment):
 
     def find_slot_transform(self, tile, table_trans, z_pos):
         tile_size = rospy.get_param('tile_size')
-        tile_type = TILE_TYPES[tile.tile_name]
-        pattern = rotate(tile_type.pattern, tile.rotations)
-        row, column = self.find_ar_tag_position(pattern)
+        row, column = self.find_ar_tag_position(tile)
         rospy.loginfo('Relative AR tag position: ({}, {})'.format(row, column))
 
         row, column = row + tile.row, column + tile.column
