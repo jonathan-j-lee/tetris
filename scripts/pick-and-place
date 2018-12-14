@@ -24,3 +24,5 @@ tmux select-pane -t 2
 tmux send-keys "roslaunch baxter_moveit_config demo_baxter.launch right_electric_gripper:=true left_electric_gripper:=true" C-m
 
 tmux -2 attach-session -t "$session"
+
+#roslaunch ar_track_alvar camera_track.launch
