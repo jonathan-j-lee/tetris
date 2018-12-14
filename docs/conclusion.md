@@ -13,13 +13,6 @@ about: conclusion
 * Not yet able to have pieces fit flush on board
 
 # Challenges
-* Identifying pieces without AR markers 
-
-   We wanted to be able to this project without the use of AR markers. However, we found that getting vision to detect the pieces was significantly more challenging than expected. Particularly, the glare of lighting against the table made it difficult to detect edges. We also needed a way to detect the shape of each piece, perhaps using some kind of convolutional neural network for classification.
-
-   In the end, we believed the complexity to be prohibitive given time constraints and fell back on using AR markers.
-
-
 * Unstable AR marker estimates
 
    The AR markers are rasterized onto the wooden pieces via laser cutter. The raster did not produce good enough contrast between the light and dark parts of the marker, so we had to paint the dark parts black. This allowed AR detection to work in most cases, however, good lighting is still a non-negligible factor.
@@ -37,9 +30,6 @@ about: conclusion
 * Bad grasps (depressions on AR marker)
 
    The vacuum gripper is not able to get good suction on the parts of the pieces overlapping with the rasterized AR marker. This is because the raster creates an uneven surface. Therefore we have to offset where we decided to pick up the pieces (the red dot).
-
-
-# Hacks
 
 # Improvements
 * Robust AR tracking

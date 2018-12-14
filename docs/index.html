@@ -18,7 +18,7 @@ layout: base
   Video not yet available.
 </div>
 <div class="col-12 float-left py-4">
-  <img src="{{ site.baseurl }}/assets/images/Baxter_with_game_board.png" alt="Baxter with Game Board">
+  <img src="{{ site.baseurl }}/assets/images/baxter-with-game-board.jpg">
   <p>
     We use a Baxter robot to solve a puzzle inspired by the classic computer game of tetris.
     While using the same pieces, the robot's goal is to solve a puzzle in which all tetris pieces fill the frame without spaces.
@@ -32,9 +32,12 @@ layout: base
   </p>
   <p>
     <ul>
-      <li>The location of the AR tags on the pieces are not very accurate so picking them up and placing them down in the correct location was very difficult</li>
-      <li>Because the suction gripper is not rigid, the pieces have to be picked up at their center of mass in order to keep them horizontal while they are moving to the final location</li>
-      <li>While moving to its desired location, the arm would occasionally knock the piece it was trying to pick up out of the way or hit the piece it was carrying against the table or frame</li>
+      <li>There are 7 unique pieces and therefore 7 unique variables to get right.</li>
+      <li>The board is rather large relative to Baxter's range of motion. This means that there is very little margin for how everything needs to be placed. One direct consequence of this is: since we're using both hands (one for gripping and the other for camera vision), we need to alternate moving the arms over the scene.</li>
+      <li>As more pieces get placed on the board, it becomes a tighter fit for the other pieces. Accurate placement of pieces becomes more crucial as the board fills up. This complexity is magnified by the odd shapes of some of the pieces.</li>
+      <li>We wanted to be able to do this project without the use of AR markers. However, we found that getting vision to detect the pieces was significantly more challenging than expected. Particularly, the glare of lighting against the table made it difficult to detect edges. We also needed a way to detect the shape of each piece, perhaps using some kind of convolutional neural network for classification. In the end, we believed the complexity to be prohibitive given time constraints and fell back on using AR markers.</li>
+      <li>Don't start the joint state publisher manually. We thought we had to start the joint state publisher in order to properly receive AR marker transforms from the left hand camera. It turns out that when we did that, we were not passing in the right parameters and the published joint states were nonsense, leading to nonsense AR marker positions. This took us a significant amount of debugging. In the end, we restarted the Baxter robot and, using only the default robot state publisher, were able to get accurate AR marker readings.</li>
+      <li>Hardware requires hacky fixes. The seal on the vacuum pipe got deformed as people were constantly changing grippers on the Baxter machines. As a result, the vacuum was no longer creating a tight seal and we could not grasp pieces reliably with the suction gripper. We ended up wrapping tape around the pipe and twisting tape into the seal to make it work. </li>
     </ul>
   </p>
 </div>
