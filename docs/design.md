@@ -9,7 +9,7 @@ In order to complete this task the robot had to:
 * Pick up the piece with a vacuum gripper in a stable manner
 * Compute the piece's solution on the board
 * Place the piece onto its solution location in the correct orientation
-
+<br/>
 
 This project will allow us the robot to complete a full game of the tetris puzzle.
 
@@ -20,6 +20,7 @@ This project will allow us the robot to complete a full game of the tetris puzzl
 * We chose to use computer vision to identify the type of tetris pieces and the board as well as its location and orientation. We use the left-hand camera to locate and identify the pieces (the head camera is not able to get a good view of the table). 
 * The vacuum gripper was chosen for pick-and-place because it is able to obtain a more stable hold on the thin pieces than the electric gripper. When attempting to grasp a piece, we move the gripper to some safe margin above the piece and use the sensor attached to the gripper to determine whether the vacuum has created a good seal (analog value above a threshold of 47). We then slowly iterate between lowering the gripper and querying for a good seal until we have successfully grasped the piece. This reduces the negative effects of any gripper positional error in the z direction and is a safe way to ensure we have grasped the piece .
 * The `MoveIt` package is used for path planning to ensure that we avoid obstacles like the table and board.
+<br/>
 
 ![Gripper holding piece]({{ site.baseurl }}/assets/images/gripper-holding-piece.jpg)
 
