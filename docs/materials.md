@@ -2,7 +2,6 @@
 title: Materials 
 about: materials
 ---
-## Additional Materials 
 
 ### Code
 Code can be found [here](https://github.com/jonathan-j-lee/tetris)
