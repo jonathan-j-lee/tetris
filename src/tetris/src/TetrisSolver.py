@@ -289,8 +289,10 @@ class OurSolver(object):
               y |
                 x -->
         """
-        offset_x = Piece.frameWidth / 2
-        offset_y = -(Piece.frameWidth / 2)
+        extra_y = .01 #meters
+        extra_x = 0
+        offset_x = (Piece.frameWidth / 2) + extra_x
+        offset_y = -(Piece.frameWidth / 2) - (extra_y)
 
         #offset x,y should be the exact top left corner of the frame
         x = (piece.col * Piece.tileWidth) + (Piece.tileWidth / 2)

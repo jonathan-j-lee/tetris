@@ -3,7 +3,7 @@ import numpy as np
 class Piece:
     inchToM = .0254 #1" = 2.54cm
     tileWidth = 2.5 * inchToM #.0635
-    frameWidth = 1 * inchToM #.0254
+    frameWidth = 2.5 * inchToM #.0254
     boardThickness = .01 #m = 1cm
 
     def __init__(self, tile_index, row, col, rotation):

@@ -21,6 +21,8 @@ from baxter_interface import gripper as robot_gripper
 
 z_offset = -.030
 table_height = -0.195
+board_x, board_y, board_z = 0, 0, 0 
+pickup_x, pickup_y, pickup_z = 0, 0, 0
 def main():
     """
     left hand:
@@ -30,7 +32,8 @@ def main():
     addTableAtHeight(pap, table_height) 
     
     #resetGripper()
-    testCoMThenSol(pap)
+    piece = getPiece(pap, "SquareTile")
+    goToCoMThenSol(pap, piece)
     #pap.move_to_rotation(0.610, 0.032, table_height + 0.008, pap.ROT_0)
     #testMoveToRotation(pap, 0.763, -0.135, -0.170)
     #testRotateBy(pap)
@@ -38,16 +41,29 @@ def main():
     #testRotations(pap)
     #testPickAndPlace(pap)
 
-def testCoMThenSol(pap):
-    piece = getPiece(pap, "SquareTile")
+def runPlaceAll(pap):
+    for piece in pap.solver.getOrderForPlacement():
+        goToCoMThenSol(pap, piece)
+
+def moveCameraToBoard(pap):
+    pap.move_camera_to_rotation(board_x, board_y, board_z, 0)
+
+def moveCameraToPickup(pap):
+    pap.move_camera_to_rotation(pickup_x, pickup_y, pickup_z, 0)
+
+def goToCoMThenSol(pap, piece):
+    moveCameraToPickup(pap)
     raw_input('Press [Enter] to move to piece CoM: ')
     pap.move_to_piece_CoM(piece)
     raw_input('Press [Enter] to grasp from current pose: ')
     pap.grasp_from_curr_pose()
+    moveCameraToBoard(pap)
     raw_input('Press [Enter] to move to solution: ')
     pap.move_to_piece_solution_pose(piece)
     raw_input('Press [Enter] to drop piece: ')
     pap.openGripper()
+    rospy.sleep(1.0)
+    #lift
 
 def getPiece(pap, name):
     for piece in pap.solver.getOrderForPlacement():

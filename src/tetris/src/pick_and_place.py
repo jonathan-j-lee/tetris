@@ -34,6 +34,7 @@ class PickAndPlace(object):
 
     def __init__(self, z_offset=0):
         self.planner = PathPlanner("right_arm")
+        self.camera_planner = PathPlanner("left_arm")
 
         self.table_height = -1
         self.z_offset = z_offset
@@ -102,17 +103,31 @@ class PickAndPlace(object):
 
 ######################Pick and place stuff
 
+    def move_camera_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
+        return self.camera_planner.move_to_pose_planner(x, y, z + self.z_offset, o_x, o_y, o_z, o_w)
+
+    def move_camera_to_rotation(self, x, y, z, rotation):
+        """
+            rotation = index of orientation as defined in rotations class variable above
+        """
+        o_x, o_y, o_z, o_w = self.rotations[rotation]
+        return self.move_camera_to_pose(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)
+
     def move_to_position(self, x, y, z):
         self.planner.move_to_position(x, y, z + self.z_offset)
 
     def move_to_pose(self, x, y, z, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         return self.planner.move_to_pose_planner(x, y, z + self.z_offset, o_x, o_y, o_z, o_w)
 
-    def move_to_pose_on_table(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
+    def move_to_pose_on_table(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0, above=False):
         if self.table_height == -1:
             print("FORGOT TO SET TABLE HEIGHT")
             return False
-        return self.move_to_pose(x, y, self.table_height + 0.018, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w) #TODO: grasp
+
+        offset_z = 0
+        if above:
+            offset_z = 0.07
+        return self.move_to_pose(x, y, self.table_height + offset_z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w) #TODO: grasp
 
     def move_to_pose_on_board(self, x, y, o_x=0.0, o_y=1.0, o_z=0.0, o_w=0.0):
         if self.table_height == -1:
@@ -133,7 +148,7 @@ class PickAndPlace(object):
                 self.closeGripper()
                 if not self.isGraspingObject():
                     self.openGripper()
-                    curr_z -= .001 #lower and try again
+                    curr_z -= .01 #lower and try again
                 else:
                     print("Object grasped")
                     self.table_height = curr_z
@@ -212,6 +227,13 @@ class PickAndPlace(object):
         """
         trans = self.getCurrPosition()
         self.move_to_position(trans.x, trans.y, trans.z - offset_z)
+
+    def goHigherBy(self, offset_z):
+        """
+            Gets current position of gripper and lowers it by offset_z (offset_z = positive amount that you want to lower by)
+        """
+        trans = self.getCurrPosition()
+        self.move_to_position(trans.x, trans.y, trans.z + offset_z)
 
     def getTransformToRightGripper(self):
         """
@@ -380,7 +402,7 @@ class PickAndPlace(object):
 
         gripper_ox, gripper_oy, gripper_oz, gripper_ow = quaternion_from_euler(0, 0, e_z - (np.pi / 2)) #off by 90 deg CW
         x, y = piece_CoM_pose_wrt_base.position.x, piece_CoM_pose_wrt_base.position.y
-        return self.move_to_pose_on_table(x, y, o_x=gripper_ow, o_y=gripper_oz, o_z=0.0, o_w=0.0)
+        return self.move_to_pose_on_table(x, y, o_x=gripper_ow, o_y=gripper_oz, o_z=0.0, o_w=0.0, above=True)
 
     def move_to_piece_solution_pose(self, piece):
         piece_CoM_pose_wrt_base = self.getBasePoseForPiece(piece)
@@ -401,7 +423,7 @@ class PickAndPlace(object):
         translation = self.getCurrPosition()
         rotation = self.getCurrRotation()
         x, y, z = translation.x, translation.y, translation.z  #keep translational x, y, z coordinates the same
-        o_x, o_y, o_z, o_w = curr_rot.x, curr_rot.y, curr_rot.z, curr_rot.w
+        o_x, o_y, o_z, o_w = rotation.x, rotation.y, rotation.z, rotation.w
         return self.move_to_pose_and_grasp(x, y, z, o_x=o_x, o_y=o_y, o_z=o_z, o_w=o_w)        
 
     def getTransformFromBoard(self):
