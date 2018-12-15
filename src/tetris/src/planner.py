@@ -102,9 +102,17 @@ class PathPlanner:
         target = create_pose(self.frame_id, position, orientation)
         if rospy.get_param('verbose'):
             log_pose('Moving to pose with planner.', position, orientation)
-        plan = self.plan_to_pose(target, orientation_constraints)
-        if not self.group.execute(plan, True):
-            raise ValueError('Failed to execute movement.')
+        for _ in range(3):
+            try:
+                plan = self.plan_to_pose(target, orientation_constraints)
+                if not self.group.execute(plan, True):
+                    raise ValueError('Execution failed.')
+            except ValueError as exc:
+                rospy.logwarn('Failed to perform movement: {}. Retrying.'.format(str(exc)))
+            else:
+                break
+        else:
+            raise ValueError('Failed to move to pose.')
 
     def plan_to_pose(self, target, orientation_constraints):
         """

@@ -2,33 +2,17 @@
 # Specific joint properties can be changed with the keys [max_position, min_position, max_velocity, max_acceleration]
 # Joint limits can be turned off with [has_velocity_limits, has_acceleration_limits]
 joint_limits:
-  arm_joint_0:
-    has_velocity_limits: true
-    max_velocity: 1.91986217719
-    has_acceleration_limits: false
-    max_acceleration: 0
-  arm_joint_1:
-    has_velocity_limits: true
-    max_velocity: 1.91986217719
-    has_acceleration_limits: false
-    max_acceleration: 0
-  arm_joint_2:
-    has_velocity_limits: true
-    max_velocity: 1.91986217719
-    has_acceleration_limits: false
-    max_acceleration: 0
-  arm_joint_3:
-    has_velocity_limits: true
-    max_velocity: 1.91986217719
-    has_acceleration_limits: false
-    max_acceleration: 0
-  sensor_head_pitch_joint:
-    has_velocity_limits: true
-    max_velocity: 100
-    has_acceleration_limits: false
-    max_acceleration: 0
-  sensor_head_yaw_joint:
-    has_velocity_limits: true
-    max_velocity: 100
-    has_acceleration_limits: false
-    max_acceleration: 0
+  right_s0:
+    has_velocity_limits: false
+  right_s1:
+    has_velocity_limits: false
+  right_e0:
+    has_velocity_limits: false
+  right_e1:
+    has_velocity_limits: false
+  right_w0:
+    has_velocity_limits: false
+  right_w1:
+    has_velocity_limits: false
+  right_w2:
+    has_velocity_limtis: false

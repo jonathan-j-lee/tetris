@@ -79,6 +79,9 @@ $ bundle exec jekyll serve
   If large amounts of air are moving through the seal, the best fix is to put layers of tape between the tube screw and the socket (not around the seal).
   The likely cause of the failure is that the screw is bent such that it creates gaps, even when fully screwed in.
   The tape fills those gaps, since it is somewhat compressible.
+- Cannot find a path.
+  Some points may not be feasible.
+  Make sure your table is high enough, and fully within reach of the robot.
 
 If all else fails, you can reboot the robot.
 This has been known to solve numerous issues, like being unable to plan paths that are clearly feasible.

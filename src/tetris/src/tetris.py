@@ -69,6 +69,7 @@ def main():
             # Retry the current piece in the event of an error
             rospy.logerr(type(exc).__name__ + ': ' + str(exc))
             traceback.print_exc()
+            task.open_gripper()
             continue
         else:
             i += 1
