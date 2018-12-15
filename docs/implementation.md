@@ -8,7 +8,7 @@ about: implementation
 We place a table in front of a Baxter robot, as shown below.
 The board and tiles rest on the table.
 
-![]({{ site.baseurl }} /assets/images/baxter-with-game-board.jpg)
+![]({{ site.baseurl }}/assets/images/baxter-with-game-board.jpg)
 
 ## Software
 
