@@ -10,6 +10,13 @@ The board and tiles rest on the table.
 
 ![]({{ site.baseurl }} /assets/images/baxter-with-game-board.jpg)
 
+## Software
+
+![System diagram]({{ site.baseurl }}/assets/images/system-diagram.png)
+
+The system diagram above summarizes the main software components.
+We used MoveIt for path planning, `ar_track_alvar` for tracking AR tags, and a pick-and-place module for coordinating the two.
+
 ## Fabrication of parts
 We used laser cutters in the makerspace at Jacobs Institute for Design Innovation to cut our own Tetris pieces and a board to place them from 1/4-inch thick plywood. The Tetris pieces are so-called because each piece is some union of 4 square blocks. Each square block is 2.5 x 2.5 inches (~6 x 6 cm) and the board can fit 6 x 8 of these blocks. We refer to the 7 unique pieces as the Square, Line, S, Z, Reverse-L, T, and L pieces.
 
@@ -69,5 +76,6 @@ However, since the rasterized AR marker is an uneven surface, it was hard for th
 
 
 5) __Repeat from step 2 until all pieces in solution have been placed__
+
 
 <br/><br/><br/>

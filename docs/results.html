@@ -38,6 +38,7 @@ layout: base
       <img alt="Raw image example" src="{{ site.baseurl }}/assets/images/colorized.png">
     </div>
   </div>
+  <br>
   <div class="col-6 float-left">
     <div class="p-4">
       <img alt="Filtered image example" src="{{ site.baseurl }}/assets/images/combined_bitmap.png">
@@ -45,6 +46,41 @@ layout: base
   </div>
 </div>
 
-* We are able to pick-and-place Square pieces reliably.
+<div class="clearfix">
+  <div class="col-6 float-left">
+    <div class="p-4">
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/aXY05JaPWDw" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+      <div class="video-wrapper">
+        <iframe src="https://www.youtube.com/embed/bBTJxY0SRa4" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+      </div>
+    </div>
+  </div>
+  <div class="col-6 float-left">
+    <div class="p-4">
+      <p>
+        The first demonstration on the left shows the pick-and-place module moving a square piece, which can be done fairly reliably, since the square has a large contiguous flat area.
+        Note the initial sweep the left hand holding the camera performs to pick up the AR tags.
+        So long as the board and tile are in correct approximate locations, this allows the robot to have no <em>a priori</em> knowledge of their exact locations.
+        Also, the board and tile need not coincide with the </tt>base</tt> frame, which is used as a "world" reference frame all transforms are relative to.
+      </p>
+      <p>
+        To ensure the tile is placed in the correct orientation, Baxter will rotate its wrist while picking up the tile so its wrist frame coincides with the tile's AR tag frame.
+        Baxter then rotates its wrist (and the tile AR tag) to coincide with the board frame (far right AR tag), with the addition of some multiple of 90 degrees.
+      </p>
+      <p>
+        The second video illustrates a common failure mode where the board is out of reach of the gripper.
+      </p>
+    </div>
+  </div>
+</div>
 
-## Example demonstration
+<div class="clearfix">
+  <div class="col-12">
+    <p>
+      Our project was able to recognize the tiles and the board, solve the puzzle, grasp the object, and rotate into the correct orientation consistently.
+      However, due to the sensitivity of other tiles' AR tags to lighting and position, we were unable to reliably pick up the other types of tiles and complete the puzzle.
+    </p>
+  </div>
+</div>

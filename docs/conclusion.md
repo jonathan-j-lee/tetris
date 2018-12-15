@@ -14,12 +14,16 @@ about: conclusion
 
 <br>
 ## Challenges
-* Unstable AR marker estimates
+* Unstable AR marker estimates.
+  The AR markers are rasterized onto the wooden pieces via laser cutter.
+  The raster did not produce good enough contrast between the light and dark parts of the marker, so we had to paint the dark parts black.
+  This allowed AR detection to work in most cases, however, good lighting is still a non-negligible factor.
 
-   The AR markers are rasterized onto the wooden pieces via laser cutter. The raster did not produce good enough contrast between the light and dark parts of the marker, so we had to paint the dark parts black. This allowed AR detection to work in most cases, however, good lighting is still a non-negligible factor.
-
-   We found that AR detection would sometimes fit incorrect axes onto the pieces. Since the camera is peering down on the scene, the axes' rotation about the Z-axis (going up out of the table) was usually very accurate. However, the orientation about the X and Y would sometimes jump around. For our task, we only care about the orientation about the Z anyway since we can assume the pieces are flat on the table. Therefore, in our code we convert the orientation quaternion from the AR marker transform into Euler angles, zero any rotation about the X and Y, convert back to quaternion and use that as the true AR marker transform.
-
+   We found that AR detection would sometimes fit incorrect axes onto the pieces.
+   Since the camera is peering down on the scene, the axes' rotation about the Z-axis (going up out of the table) was usually very accurate.
+   However, the orientation about the X and Y would sometimes jump around.
+   For our task, we only care about the orientation about the Z anyway since we can assume the pieces are flat on the table.
+   Therefore, in our code we convert the orientation quaternion from the AR marker transform into Euler angles, zero any rotation about the X and Y, convert back to quaternion and use that as the true AR marker transform.
 
 * Tile types share an AR marker ID.
   AR detection will have conflicts if there are multiple markers with the same exact ID in the camera view at the same time. Therefore, we choose to feed the robot pieces one-by-one.
@@ -41,23 +45,20 @@ about: conclusion
 
 <br>
 ## Improvements
-* Robust AR tracking
+* Robust AR tracking.
+  We can raster two AR markers per piece for greater pose stability and more robust initial detection.
+  We used the bundle feature of `ar_track_alvar` to create very reliable poses for the board, so bundling tags on tiles would be a valuable extension.
 
-   We can raster 2 AR markers per piece for greater pose stability and more robust initiail detection.
+* Placing tags away from the tile center of mass.
+  This will allow us to move the red dot of each piece (grasp point) to its true center of mass.
+  This, in turn, improves the stability of the gripper while the attached arm moves, especially if the robot is moving along an unpredictable path.
 
+* Assigning unique AR tags to each piece.
+  This would enable us to have all the pieces laid out on the board at once, while still allowing AR detection to work.
+  This eliminates the need for a human to standby and feed the pieces one by one.
+  The system would be fully autonomous.
 
-* Placing tags away from the tile center of mass
-
-   This will allow us to move the red dot of each piece (where we grasp it) to its true center of mass. This in turn helps stability during pick-and-place, especially if the robot is moving along an unpredictable path.
-
-
-* Assigning unique AR tags to each piece
-
-   This would enable us to have all the pieces laid out on the board at once, while still allowing AR detection to work. This eliminates the need for a human to standby and feed the pieces one by one. Thus the system could be fully autonomous.
-
-
-* Use vision without AR markers
-
-   This would extend the applicability of our project to pieces without AR markers (i.e. most things in the world). One example would be brick-laying in construction.
+* Use vision without AR markers.
+  This would extend the applicability of our project to pieces without AR markers (i.e. most things in the world).
 
 <br/><br/><br/>
