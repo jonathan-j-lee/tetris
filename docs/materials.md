@@ -13,5 +13,6 @@ Launch files written for this project include:
 1. [`baxter_state_publisher.launch`](https://github.com/jonathan-j-lee/tetris/blob/master/src/tetris/launch/baxter_state_publisher.launch): Publishes the robot's links and joints to TF. You won't need to use this unless Baxter starts with its links disconnected.
 1. [`tetris.launch`](https://github.com/jonathan-j-lee/tetris/blob/master/src/tetris/launch/tetris.launch): Invokes the main Tetris solver and pick-and-place module. It also runs the first three launch files above, so it suffices to launch from this file only.
 
+<br>
 ## Laser Cut File
 The laser cut file for the board and pieces can be found [here]({{ site.baseurl }}/assets/adobe_illustrator/Tetris-Puzzle-AR-Tag.ai).
