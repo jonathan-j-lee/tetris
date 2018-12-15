@@ -38,7 +38,7 @@ TileType = namedtuple('TileType', ['marker_id', 'name', 'rotations', 'x_offset',
 Tile = namedtuple('Tile', ['tile_name', 'row', 'column', 'rotations'])
 
 TILE_SIZE = rospy.get_param('tile_size')/100
-SQUARE_TILE = TileType(0, 'square', 1, -0.9*TILE_SIZE, -0.9*TILE_SIZE, [
+SQUARE_TILE = TileType(0, 'square', 1, 0.9*TILE_SIZE, -0.9*TILE_SIZE, [
     [FLAT, AR_TAG],
     [FLAT, FLAT],
 ])

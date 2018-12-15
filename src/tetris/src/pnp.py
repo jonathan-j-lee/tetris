@@ -238,7 +238,7 @@ class TetrisPNPTask(SuctionPNPTask):
         self.gripper_planner.move_to_pose_with_planner(target, orientation)
 
         drop = np.copy(target)
-        drop[2] = board_trans.transform.translation.z + 0.10
+        drop[2] = board_trans.transform.translation.z + 0.05
         self.gripper_planner.move_to_pose(drop, orientation)
         self.open_gripper()
         self.gripper_planner.move_to_pose_with_planner(target, orientation)
